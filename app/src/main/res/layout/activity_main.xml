@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#121212"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/title_label"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="24dp"
+            android:importantForAccessibility="yes" />
+
+        <!-- Keep-alive-after-lock toggle -->
+        <CheckBox
+            android:id="@+id/chkKeepAlive"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/keep_alive_label"
+            android:textSize="16sp"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="24dp"
+            android:contentDescription="@string/desc_keep_alive_checkbox" />
+
+        <!-- 1. Consistent Mode -->
+        <Button
+            android:id="@+id/btnConsistent"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:text="@string/mode_consistent_button"
+            android:textSize="18sp"
+            android:backgroundTint="#333333"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="16dp"
+            android:contentDescription="@string/desc_consistent_button" />
+
+        <!-- 2. Pulsing Mode -->
+        <Button
+            android:id="@+id/btnPulsing"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:text="@string/mode_pulsing_button"
+            android:textSize="18sp"
+            android:backgroundTint="#333333"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="16dp"
+            android:contentDescription="@string/desc_pulsing_button" />
+
+        <!-- 3. Unpredictable Mode -->
+        <Button
+            android:id="@+id/btnUnpredictable"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:text="@string/mode_unpredictable_button"
+            android:textSize="18sp"
+            android:backgroundTint="#333333"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="16dp"
+            android:contentDescription="@string/desc_unpredictable_button" />
+
+        <!-- 4. Vacuum Mode -->
+        <Button
+            android:id="@+id/btnVacuum"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:text="@string/mode_vacuum_button"
+            android:textSize="18sp"
+            android:backgroundTint="#333333"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="32dp"
+            android:contentDescription="@string/desc_vacuum_button" />
+
+        <!-- Stop Button -->
+        <Button
+            android:id="@+id/btnStop"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:text="@string/stop_button"
+            android:textSize="18sp"
+            android:backgroundTint="#B00020"
+            android:textColor="#FFFFFF"
+            android:contentDescription="@string/desc_stop_button" />
+
+    </LinearLayout>
+</ScrollView>

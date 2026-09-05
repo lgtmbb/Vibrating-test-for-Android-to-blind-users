@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Rezgés Tesztelő</string>
+    <string name="title_label">Rezgés Tesztelő</string>
+
+    <string name="mode_consistent_button">1. Állandó Mód (Consistent)</string>
+    <string name="mode_pulsing_button">2. Pulzáló Mód (Pulsing)</string>
+    <string name="mode_unpredictable_button">3. Kiszámíthatatlan (Unpredictable)</string>
+    <string name="mode_vacuum_button">4. Szívó / Vákuum Mód (Vacuum)</string>
+    <string name="stop_button">Leállítás</string>
+
+    <string name="mode_consistent_short">Állandó mód</string>
+    <string name="mode_pulsing_short">Pulzáló mód</string>
+    <string name="mode_unpredictable_short">Kiszámíthatatlan mód</string>
+    <string name="mode_vacuum_short">Vákuum mód</string>
+
+    <string name="desc_consistent_button">Állandó Mód gomb. Folyamatos, szünet nélküli rezgést indít.</string>
+    <string name="desc_pulsing_button">Pulzáló Mód gomb. Ritmikus, szabályos időközönként ismétlődő rezgést indít.</string>
+    <string name="desc_unpredictable_button">Kiszámíthatatlan Mód gomb. Véletlenszerű hosszúságú és szünetű rezgéseket indít.</string>
+    <string name="desc_vacuum_button">Vákuum Mód gomb. Fokozatosan erősödő, majd hirtelen megszakadó rezgést indít, mintha beszívás történne.</string>
+    <string name="desc_stop_button">Leállítás gomb. Az összes folyamatban lévő rezgést azonnal megszakítja.</string>
+    <string name="desc_keep_alive_checkbox">Folytatás képernyőzár után. Ha be van jelölve, a rezgés a képernyő lezárása vagy az alkalmazás háttérbe kerülése után is folytatódik, egy értesítés jelzi a futást.</string>
+
+    <string name="keep_alive_label">Folytatás képernyőzár után is</string>
+
+    <string name="announce_consistent">Állandó rezgés mód elindítva</string>
+    <string name="announce_pulsing">Pulzáló rezgés mód elindítva</string>
+    <string name="announce_unpredictable">Kiszámíthatatlan rezgés mód elindítva</string>
+    <string name="announce_vacuum">Vákuum rezgés mód elindítva</string>
+    <string name="announce_stop">Rezgések leállítva</string>
+    <string name="announce_keep_alive_on">Képernyőzár utáni folytatás bekapcsolva</string>
+    <string name="announce_keep_alive_off">Képernyőzár utáni folytatás kikapcsolva</string>
+
+    <string name="notification_channel_name">Rezgés folyamatban</string>
+    <string name="notification_title">Rezgés Tesztelő aktív</string>
+</resources>

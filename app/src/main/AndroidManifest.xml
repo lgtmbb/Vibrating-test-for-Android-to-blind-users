@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- A csomagnevet (com.example.vibrationtester) az app/build.gradle "namespace"
+         beállítása adja meg; az Android Gradle Plugin 7+ óta ez a helyes hely,
+         a manifestben szereplő package="" attribútum elavult és figyelmeztetést
+         okozna a build.gradle-ben szereplő namespace mellett. -->
+
+    <!-- Jogosultság a rezgésvezérléshez -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <!-- A foreground service futtatásához (képernyőzár utáni folytatás) -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+
+    <!-- A CPU ébren tartásához, hogy a rezgésminta időzítése pontos maradjon képernyőzár alatt -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <!-- Android 13+ (API 33): enélkül a folyamatban lévő értesítés nem jelenik meg -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@drawable/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.AppCompat.DayNight.DarkActionBar">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <service
+            android:name=".VibrationService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Rezgésminta-visszajelzés folytatása képernyőzár alatt egy kisegítő lehetőségeket (TalkBack) tesztelő alkalmazásban, a felhasználó kifejezett, jelölőnégyzettel adott engedélye alapján." />
+        </service>
+
+    </application>
+
+</manifest>
