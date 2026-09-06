@@ -90,7 +90,19 @@
             android:textSize="18sp"
             android:backgroundTint="#B00020"
             android:textColor="#FFFFFF"
+            android:layout_marginBottom="16dp"
             android:contentDescription="@string/desc_stop_button" />
+
+        <!-- Settings Button (always the final button) -->
+        <Button
+            android:id="@+id/btnSettings"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:text="@string/settings_button"
+            android:textSize="18sp"
+            android:backgroundTint="#333333"
+            android:textColor="#FFFFFF"
+            android:contentDescription="@string/desc_settings_button" />
 
     </LinearLayout>
 </ScrollView>

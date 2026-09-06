@@ -5,6 +5,48 @@ egy .zip-be csomagolt fájlból állt, teljes build-rendszer nélkül. Ez a
 verzió az első, ami tényleges, lefordítható Android Studio projektként van
 strukturálva.
 
+## [1.2.0]
+
+### Hozzáadva
+- **Beállítások képernyő** (a főképernyő ötödik, utolsó gombja), amely a
+  kutatott rezgés-API-felületet (lásd `VIBRATION_API_RESEARCH.md`)
+  szabályozható beállításokká alakítja:
+  - Rezgés erőssége (1-255, csak ha a hardver támogatja - `hasAmplitudeControl()`).
+  - Rezgés hossza és a szünet hossza ezredmásodpercben, saját mezőkben.
+  - Kiszámíthatatlanság mértéke (0-100%) a Kiszámíthatatlan módhoz.
+  - Rezgéstípus: egyéni hullámforma / előre definiált effektus (Android
+    10+) / összetett primitívek (Android 11+, Android 12-től megbízható
+    támogatottság-ellenőrzéssel).
+  - **Eszköz képességei** szakasz: minden fenti funkcióról kiírja, hogy az
+    adott telefonon elérhető-e, és ha nem, miért (API-szint hiánya vagy
+    hardverkorlát), beleértve a rezonanciafrekvenciát és jósági tényezőt is
+    (Android 13+, ha a hardver jelenti).
+- `VibrationCapabilities`: futásidejű képesség-lekérdező réteg, amely
+  soha nem következtet Android-verzióból, mindig a Vibrator saját
+  ellenőrző metódusait hívja (`hasAmplitudeControl`, `areEffectsSupported`,
+  `arePrimitivesSupported`, stb.).
+- `VibrationSettings`: minden fenti paraméter és a két viselkedési
+  kapcsoló (képernyőzár utáni folytatás, gomb-ismétlési viselkedés) közös,
+  `SharedPreferences`-re épülő tárolója.
+- **"Gomb ismételt megnyomása újraindítja a rezgést" kapcsoló** (a
+  Beállítások képernyőn, részletes leírással): alapértelmezésben
+  bekapcsolva (ez az eddigi viselkedés - minden gombnyomás újraindít).
+  Kikapcsolva: ha egy mód gombját nyomják meg úgy, hogy az a mód már fut,
+  a gomb nem csinál semmit (nem indítja újra a rezgést), csak egy rövid
+  TalkBack-bemondást ad ("Már fut ez a mód..."). Ehhez a
+  `VibrationService` egy `currentActiveMode` állapotot tart nyilván, amit
+  a `MainActivity` minden gombnyomáskor leellenőriz.
+- `VIBRATION_API_RESEARCH.md`: külön dokumentum, amely API-szintenként
+  (Android 4.0-tól a jelenlegi verziókig) összefoglalja, milyen
+  rezgés-paraméterek léteznek egyáltalán a platformon, hivatalos
+  fejlesztői dokumentációra hivatkozva.
+
+### Változott
+- Az Állandó, Pulzáló és Kiszámíthatatlan mód mostantól a Beállítások
+  képernyőn megadott hosszt, szünetet és rezgéstípust használja a korábbi
+  fix, kódba írt értékek helyett. A Vákuum mód szándékosan kivétel: mindig
+  az egyéni hullámformát használja, mert a fokozatos erősödés a lényege.
+
 ## [1.1.0]
 
 ### Hozzáadva

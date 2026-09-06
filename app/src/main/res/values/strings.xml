@@ -33,4 +33,77 @@
 
     <string name="notification_channel_name">Rezgés folyamatban</string>
     <string name="notification_title">Rezgés Tesztelő aktív</string>
+
+    <!-- Settings button on the main screen -->
+    <string name="settings_button">5. Beállítások</string>
+    <string name="desc_settings_button">Beállítások gomb. Megnyitja a rezgés erősségét, hosszát, szünetét és egyéb részleteit szabályozó képernyőt.</string>
+    <string name="announce_already_running">Már fut ez a mód, a gomb nem indította újra</string>
+
+    <!-- Settings screen -->
+    <string name="settings_title">Beállítások</string>
+
+    <string name="settings_section_capabilities">Eszköz képességei</string>
+    <string name="capability_sdk_version">Android API szint: %1$d</string>
+    <string name="capability_has_vibrator_yes">Rezgőmotor: van</string>
+    <string name="capability_has_vibrator_no">Rezgőmotor: nincs (a készülék nem jelez rezgési képességet)</string>
+    <string name="capability_amplitude_os_unavailable">Erősségszabályzás: nem elérhető (Android 8.0 alatt az API nem is létezik)</string>
+    <string name="capability_amplitude_yes">Erősségszabályzás: elérhető ezen a készüléken</string>
+    <string name="capability_amplitude_no">Erősségszabályzás: az API 8.0-tól létezik, de ez a hardver nem támogatja - minden erősségérték csak be/ki különbséget okoz</string>
+    <string name="capability_predefined_os_unavailable">Előre definiált effektusok: nem elérhetők (Android 10 alatti verzión az API nem létezik)</string>
+    <string name="capability_composition_os_unavailable">Összetett primitívek: nem elérhetők (Android 11 alatti verzión az API nem létezik)</string>
+    <string name="capability_resonant_frequency">Rezonanciafrekvencia: %1$.1f Hz</string>
+    <string name="capability_resonant_frequency_unavailable">Rezonanciafrekvencia: nem elérhető (Android 13 alatti verzión nincs API rá, vagy a hardver nem jelenti)</string>
+    <string name="capability_q_factor">Jósági tényező (Q): %1$.2f</string>
+    <string name="capability_q_factor_unavailable">Jósági tényező (Q): nem elérhető</string>
+    <string name="support_yes">támogatott</string>
+    <string name="support_no">nem támogatott (a rendszer általános mintára esik vissza)</string>
+    <string name="support_unknown">nem ellenőrizhető ezen az API-szinten</string>
+    <string name="support_unreliable_note">(Android 11-en ez az ellenőrzés nem megbízható - lásd a leírást)</string>
+
+    <string name="settings_section_amplitude">Rezgés erőssége</string>
+    <string name="use_custom_amplitude_label">Egyéni erősség használata</string>
+    <string name="use_custom_amplitude_description">Ha ki van kapcsolva, a rendszer alapértelmezett erősségét használja az alkalmazás. Csak Android 8.0-tól és csak olyan hardveren módosítható, amely jelzi az erősségszabályzás támogatását - ha nem elérhető, ez a kapcsoló le van tiltva.</string>
+    <string name="amplitude_value_format">Erősség: %1$d / 255</string>
+
+    <string name="settings_section_duration">Rezgés hossza</string>
+    <string name="duration_label">Rezgés hossza ezredmásodpercben (ms)</string>
+    <string name="duration_description">Az Állandó, Pulzáló és Kiszámíthatatlan mód rezgési impulzusainak hossza. A Vákuum mód ezt nem használja, mert ott a lépésenkénti 40ms-es ütem adja a mód jellegét.</string>
+
+    <string name="settings_section_pause">Szünet hossza</string>
+    <string name="pause_label">Szünet hossza ezredmásodpercben (ms)</string>
+    <string name="pause_description">A Pulzáló mód impulzusai közti szünet, a Kiszámíthatatlan mód szünetének alapértéke, és a Vákuum mód ciklusai közti szünet.</string>
+
+    <string name="settings_section_unpredictability">Kiszámíthatatlanság mértéke</string>
+    <string name="unpredictability_label">Mennyire térjen el véletlenszerűen a Kiszámíthatatlan mód a fenti hossz- és szünetértékektől</string>
+    <string name="unpredictability_value_format">%1$d%%</string>
+
+    <string name="settings_section_vibration_type">Rezgéstípus</string>
+    <string name="vibration_type_custom">Egyéni hullámforma (a fenti erősség és hossz alapján)</string>
+    <string name="vibration_type_predefined">Előre definiált effektus (Android 10-től)</string>
+    <string name="vibration_type_composition">Összetett primitívek (Android 11-től)</string>
+    <string name="vibration_type_description">Az Állandó, Pulzáló és Kiszámíthatatlan mód ezt a típust használja minden impulzushoz. A Vákuum mód mindig az egyéni hullámformát használja, függetlenül ettől a beállítástól, mert a fokozatos erősödés a lényege, amit a másik két típus nem tud kifejezni.</string>
+
+    <string name="settings_section_predefined_effect">Melyik előre definiált effektus</string>
+    <string name="settings_section_composition">Mely primitívek szerepeljenek az összetett rezgésben</string>
+    <string name="composition_description">Legalább egy primitívet ki kell választani. Ha egyik sem elérhető ezen a készüléken, vagy egy sem lett kiválasztva, az alkalmazás csendben visszaesik az egyéni hullámformára.</string>
+
+    <string name="settings_section_repeat_press">Gomb ismételt megnyomása</string>
+    <string name="restart_on_repeat_label">Gomb ismételt megnyomása újraindítja a rezgést</string>
+    <string name="restart_on_repeat_description">Bekapcsolva (ez az alapértelmezett, korábbi viselkedés): egy mód gombjának minden egyes megnyomása - függetlenül attól, hogy az a mód már fut-e, le van-e állítva, vagy másik mód fut éppen - mindig újraindítja a rezgést az elejéről. Kikapcsolva: ha egy gomb módja már éppen fut, annak ismételt (például véletlen dupla) megnyomása nem csinál semmit - a rezgés zavartalanul, újraindulás nélkül folytatódik. Más gomb megnyomása, vagy a Leállítás utáni újraindítás ilyenkor is a szokásos módon működik; ez a beállítás kizárólag azt az esetet érinti, amikor ugyanannak a már aktív módnak a gombját nyomja meg valaki újra.</string>
+
+    <!-- Predefined effect names (VibrationEffect.EFFECT_*, API 29+) -->
+    <string name="effect_click">Kattintás (CLICK)</string>
+    <string name="effect_double_click">Dupla kattintás (DOUBLE_CLICK)</string>
+    <string name="effect_tick">Koppintás (TICK)</string>
+    <string name="effect_heavy_click">Erős kattintás (HEAVY_CLICK)</string>
+
+    <!-- Composition primitive names (VibrationEffect.Composition.PRIMITIVE_*, API 30+/31+) -->
+    <string name="primitive_click">Kattintás (CLICK)</string>
+    <string name="primitive_tick">Koppintás (TICK)</string>
+    <string name="primitive_quick_rise">Gyors emelkedés (QUICK_RISE)</string>
+    <string name="primitive_slow_rise">Lassú emelkedés (SLOW_RISE)</string>
+    <string name="primitive_quick_fall">Gyors esés (QUICK_FALL)</string>
+    <string name="primitive_thud">Tompa ütés (THUD, Android 12-től)</string>
+    <string name="primitive_spin">Pörgés-érzet (SPIN, Android 12-től)</string>
+    <string name="primitive_low_tick">Halk koppintás (LOW_TICK, Android 12-től)</string>
 </resources>

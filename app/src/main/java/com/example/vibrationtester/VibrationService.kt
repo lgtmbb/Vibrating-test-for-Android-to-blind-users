@@ -38,6 +38,10 @@ import kotlin.random.Random
  * to stop shortly after the app leaves the foreground (this mirrors the
  * previous, less reliable behaviour on purpose, so the checkbox has a real
  * effect the user can feel).
+ *
+ * All duration/pause/amplitude/effect-type parameters are read from
+ * VibrationSettings at the moment a pattern starts, so changes made in
+ * SettingsActivity take effect the next time a mode button is pressed.
  */
 class VibrationService : Service() {
 
@@ -57,9 +61,17 @@ class VibrationService : Service() {
         private const val WAKE_LOCK_TAG = "VibrationTester:VibrationWakeLock"
         // Safety cap so a forgotten notification can't hold a wake lock forever.
         private const val WAKE_LOCK_TIMEOUT_MS = 30L * 60L * 1000L
+
+        // Melyik mód fut éppen (null = nincs). A MainActivity ezt olvassa ki,
+        // hogy el tudja dönteni: egy gombnyomás új indítás-e, vagy egy már
+        // aktív mód ismételt (esetleg szándéktalan, dupla) megnyomása.
+        @Volatile
+        var currentActiveMode: Int? = null
+            private set
     }
 
     private lateinit var vibrator: Vibrator
+    private lateinit var settings: VibrationSettings
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     private var patternJob: Job? = null
     private var wakeLock: PowerManager.WakeLock? = null
@@ -73,6 +85,7 @@ class VibrationService : Service() {
             @Suppress("DEPRECATION")
             getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
         }
+        settings = VibrationSettings(this)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -85,11 +98,13 @@ class VibrationService : Service() {
                 } else {
                     demoteFromForeground()
                 }
+                currentActiveMode = mode
                 startPattern(mode)
             }
             ACTION_STOP -> {
                 stopPattern()
                 demoteFromForeground()
+                currentActiveMode = null
                 stopSelf()
             }
         }
@@ -101,6 +116,7 @@ class VibrationService : Service() {
     override fun onDestroy() {
         stopPattern()
         demoteFromForeground()
+        currentActiveMode = null
         scope.cancel()
         super.onDestroy()
     }
@@ -202,33 +218,44 @@ class VibrationService : Service() {
         vibrator.cancel()
     }
 
-    // 1. Consistent Mode: folyamatos, szünetmentes rezgés
+    // 1. Consistent Mode: folyamatos, gyakorlatilag szünetmentes rezgés.
+    // A duration most már beállítható; a következő impulzus mindig 100ms-cel
+    // az előző vége előtt indul, hogy az átfedés (és így a folytonosság
+    // érzete) a hossztól függetlenül megmaradjon.
     private suspend fun CoroutineScope.runConsistent() {
         while (isActive) {
-            vibrateOneShot(2000)
-            delay(1900) // minimális átfedés a folytonos hatásért
+            val duration = settings.durationMs
+            vibratePulse(duration, settings.effectiveAmplitude())
+            delay((duration - 100).coerceAtLeast(50))
         }
     }
 
-    // 2. Pulsing Mode: szabályos időközönként ismétlődő impulzusok
+    // 2. Pulsing Mode: beállítható hosszúságú impulzus, beállítható szünettel.
     private suspend fun CoroutineScope.runPulsing() {
         while (isActive) {
-            vibrateOneShot(400)
-            delay(800)
+            vibratePulse(settings.durationMs, settings.effectiveAmplitude())
+            delay(settings.pauseMs)
         }
     }
 
-    // 3. Unpredictable Mode: véletlenszerű időtartamok és szünetek
+    // 3. Unpredictable Mode: a beállított duration/pause körül véletlenszerűen
+    // szór, a "Kiszámíthatatlanság mértéke" (0-100%) csúszka által vezérelve.
     private suspend fun CoroutineScope.runUnpredictable() {
         while (isActive) {
-            val randomDuration = Random.nextLong(100, 1000)
-            val randomDelay = Random.nextLong(200, 1500)
-            vibrateOneShot(randomDuration)
-            delay(randomDuration + randomDelay)
+            val variance = settings.unpredictabilityPercent / 100.0
+            val duration = randomizedValue(settings.durationMs, variance)
+            val pause = randomizedValue(settings.pauseMs, variance)
+            vibratePulse(duration, settings.effectiveAmplitude())
+            delay(duration + pause)
         }
     }
 
-    // 4. Vacuum / Sucking Mode: fokozatosan erősödő rezgés, majd hirtelen leállás
+    // 4. Vacuum / Sucking Mode: fokozatosan erősödő rezgés, majd hirtelen
+    // leállás. A lépésenkénti 40ms-es ütem adja a mód jellegét, ezért az
+    // mindig fix marad; csak a ciklusok közti szünet jön a beállításokból.
+    // Ez a mód mindig az egyéni hullámformát használja (nem az előre
+    // definiált effektust vagy a primitíveket), mert a fokozatos erősödés a
+    // lényege, amit azok nem tudnak kifejezni.
     private suspend fun CoroutineScope.runVacuum() {
         while (isActive) {
             for (amplitude in 50..255 step 51) {
@@ -236,7 +263,43 @@ class VibrationService : Service() {
                 delay(40)
             }
             vibrator.cancel()
-            delay(600)
+            delay(settings.pauseMs)
+        }
+    }
+
+    private fun randomizedValue(base: Long, variance: Double): Long {
+        if (variance <= 0.0) return base
+        val factor = 1.0 + Random.nextDouble(-variance, variance)
+        return (base * factor).toLong().coerceAtLeast(20L)
+    }
+
+    /**
+     * Egyetlen rezgési impulzus lejátszása a beállított típus szerint:
+     * egyéni hullámforma (duration+amplitude), előre definiált effektus,
+     * vagy összetett primitívek. Ha a kiválasztott típus az adott
+     * API-szinten vagy hardveren nem elérhető, csendben visszaesik az
+     * egyéni hullámformára.
+     */
+    private fun vibratePulse(durationMs: Long, amplitude: Int) {
+        when (settings.vibrationType) {
+            VibrationSettings.VibrationType.PREDEFINED -> {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    vibrator.vibrate(VibrationEffect.createPredefined(settings.predefinedEffectId))
+                } else {
+                    vibrateOneShot(durationMs, amplitude)
+                }
+            }
+            VibrationSettings.VibrationType.COMPOSITION -> {
+                val ids = settings.selectedPrimitiveIds
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && ids.isNotEmpty()) {
+                    val composition = VibrationEffect.startComposition()
+                    ids.forEach { composition.addPrimitive(it) }
+                    vibrator.vibrate(composition.compose())
+                } else {
+                    vibrateOneShot(durationMs, amplitude)
+                }
+            }
+            VibrationSettings.VibrationType.CUSTOM -> vibrateOneShot(durationMs, amplitude)
         }
     }
 

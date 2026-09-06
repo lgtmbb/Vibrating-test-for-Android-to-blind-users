@@ -72,6 +72,24 @@ médialejátszás stb.) sem, ez a hivatalosan javasolt típus erre a célra.
 Forrás: [Android fejlesztői dokumentáció – Foreground service types are
 required](https://developer.android.com/about/versions/14/changes/fgs-types-required).
 
+## Beállítások képernyő (5. gomb)
+
+A főképernyő ötödik, utolsó gombja megnyitja a Beállítások képernyőt, ami a
+`VIBRATION_API_RESEARCH.md`-ben dokumentált teljes rezgés-API felületet
+szabályozhatóvá teszi: erősség, hossz, szünet, a Kiszámíthatatlan mód
+szórásának mértéke, valamint a rezgés típusa (egyéni hullámforma / előre
+definiált effektus / összetett primitívek). A képernyő tetején egy "Eszköz
+képességei" szakasz kiírja, hogy az adott telefonon melyik funkció érhető el
+és melyik nem - futásidejű ellenőrzéssel, nem csak Android-verzió alapján
+következtetve. A Vákuum mód szándékosan nem használja ezeket a
+beállításokat (a duration/pause és a rezgéstípus kivételével a szünetnél),
+mert a fokozatosan erősödő ütem a lényege.
+
+Ugyanitt van a "Gomb ismételt megnyomása újraindítja a rezgést" kapcsoló is,
+részletes leírással: alapértelmezésben bekapcsolva (minden gombnyomás
+újraindítja a rezgést, ahogy korábban is), kikapcsolva pedig egy már aktív
+mód gombjának ismételt megnyomása nem csinál semmit.
+
 ## Javított hiba
 
 Az eredeti kód `findViewById<Button>(R.btnConsistent)` (és a másik három

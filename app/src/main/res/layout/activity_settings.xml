@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#121212"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/settings_title"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Device capabilities (read-only, populated in code) -->
+        <TextView
+            style="@style/SettingsSectionHeader"
+            android:text="@string/settings_section_capabilities" />
+        <LinearLayout
+            android:id="@+id/containerCapabilities"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Amplitude -->
+        <TextView
+            style="@style/SettingsSectionHeader"
+            android:text="@string/settings_section_amplitude" />
+        <CheckBox
+            android:id="@+id/chkUseCustomAmplitude"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/use_custom_amplitude_label"
+            android:textColor="#FFFFFF" />
+        <TextView
+            style="@style/SettingsDescription"
+            android:text="@string/use_custom_amplitude_description" />
+        <TextView
+            android:id="@+id/lblAmplitudeValue"
+            style="@style/SettingsValueLabel" />
+        <SeekBar
+            android:id="@+id/seekAmplitude"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="254"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Duration -->
+        <TextView
+            style="@style/SettingsSectionHeader"
+            android:text="@string/settings_section_duration" />
+        <TextView
+            style="@style/SettingsDescription"
+            android:text="@string/duration_description" />
+        <EditText
+            android:id="@+id/editDuration"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:hint="@string/duration_label"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#AAAAAA"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Pause -->
+        <TextView
+            style="@style/SettingsSectionHeader"
+            android:text="@string/settings_section_pause" />
+        <TextView
+            style="@style/SettingsDescription"
+            android:text="@string/pause_description" />
+        <EditText
+            android:id="@+id/editPause"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:hint="@string/pause_label"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#AAAAAA"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Unpredictability -->
+        <TextView
+            style="@style/SettingsSectionHeader"
+            android:text="@string/settings_section_unpredictability" />
+        <TextView
+            style="@style/SettingsDescription"
+            android:text="@string/unpredictability_label" />
+        <TextView
+            android:id="@+id/lblUnpredictabilityValue"
+            style="@style/SettingsValueLabel" />
+        <SeekBar
+            android:id="@+id/seekUnpredictability"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="100"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Vibration type -->
+        <TextView
+            style="@style/SettingsSectionHeader"
+            android:text="@string/settings_section_vibration_type" />
+        <TextView
+            style="@style/SettingsDescription"
+            android:text="@string/vibration_type_description" />
+        <RadioGroup
+            android:id="@+id/radioVibrationType"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp">
+            <RadioButton
+                android:id="@+id/radioTypeCustom"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/vibration_type_custom"
+                android:textColor="#FFFFFF" />
+            <RadioButton
+                android:id="@+id/radioTypePredefined"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/vibration_type_predefined"
+                android:textColor="#FFFFFF" />
+            <RadioButton
+                android:id="@+id/radioTypeComposition"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/vibration_type_composition"
+                android:textColor="#FFFFFF" />
+        </RadioGroup>
+
+        <!-- Predefined effect sub-panel (populated in code) -->
+        <LinearLayout
+            android:id="@+id/panelPredefinedEffect"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:layout_marginBottom="16dp">
+            <TextView
+                style="@style/SettingsSectionHeader"
+                android:text="@string/settings_section_predefined_effect" />
+            <RadioGroup
+                android:id="@+id/radioPredefinedEffects"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <!-- Composition sub-panel (populated in code) -->
+        <LinearLayout
+            android:id="@+id/panelComposition"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:layout_marginBottom="16dp">
+            <TextView
+                style="@style/SettingsSectionHeader"
+                android:text="@string/settings_section_composition" />
+            <TextView
+                style="@style/SettingsDescription"
+                android:text="@string/composition_description" />
+            <LinearLayout
+                android:id="@+id/containerPrimitives"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+        </LinearLayout>
+
+        <!-- Repeat-press behaviour -->
+        <TextView
+            style="@style/SettingsSectionHeader"
+            android:text="@string/settings_section_repeat_press" />
+        <CheckBox
+            android:id="@+id/chkRestartOnRepeatPress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/restart_on_repeat_label"
+            android:textColor="#FFFFFF" />
+        <TextView
+            style="@style/SettingsDescription"
+            android:text="@string/restart_on_repeat_description" />
+
+    </LinearLayout>
+</ScrollView>
