@@ -20,7 +20,7 @@
     <string name="desc_pulsing_button">Pulzáló Mód gomb. Ritmikus, szabályos időközönként ismétlődő rezgést indít.</string>
     <string name="desc_inconsistent_button">Következetlen Mód gomb. A Beállításokban megadott hossz és szünet körül, mérsékelt mértékben véletlenszerű rezgéseket indít.</string>
     <string name="desc_vacuum_button">Vákuum Mód gomb. Fokozatosan erősödő, majd hirtelen megszakadó rezgést indít, mintha beszívás történne.</string>
-    <string name="desc_truly_random_button">Kiszámíthatatlan Mód gomb. Minden egyes rezgésnél az erősséget, a hosszt, a szünetet, a rezgés jellegét és a lüktetések számát is véletlenszerűen, széles tartományban változtatja - jóval erősebben, mint a Következetlen mód -, hogy ne alakuljon ki felismerhető minta.</string>
+    <string name="desc_truly_random_button">Kiszámíthatatlan Mód gomb. Minden egyes rezgésnél véletlenszerűen dönt az erősség, a hossz, a hullámforma szerkezete (sima impulzus vagy mikro-lüktetés-sorozat), a rezgés jellege (egyéni / előre definiált effektus / összetett primitívek / Android 16-os envelope-effektus, amelyik éppen elérhető), és a lüktetések száma közt - jóval erősebben, mint a Következetlen mód -, hogy ne alakuljon ki felismerhető minta.</string>
     <string name="desc_stop_button">Leállítás gomb. Az összes folyamatban lévő rezgést azonnal megszakítja.</string>
     <string name="desc_keep_alive_checkbox">Folytatás képernyőzár után. Ha be van jelölve, a rezgés a képernyő lezárása vagy az alkalmazás háttérbe kerülése után is folytatódik, egy értesítés jelzi a futást.</string>
 
@@ -59,6 +59,9 @@
     <string name="capability_resonant_frequency_unavailable">Rezonanciafrekvencia: nem elérhető (Android 13 alatti verzión nincs API rá, vagy a hardver nem jelenti)</string>
     <string name="capability_q_factor">Jósági tényező (Q): %1$.2f</string>
     <string name="capability_q_factor_unavailable">Jósági tényező (Q): nem elérhető</string>
+    <string name="capability_envelope_os_unavailable">Envelope-effektusok (BasicEnvelopeBuilder): nem elérhetők (Android 16 alatti verzión az API nem létezik)</string>
+    <string name="capability_envelope_yes">Envelope-effektusok (BasicEnvelopeBuilder): elérhetők ezen a készüléken</string>
+    <string name="capability_envelope_no">Envelope-effektusok (BasicEnvelopeBuilder): az API 16-tól létezik, de ez a hardver nem támogatja</string>
     <string name="support_yes">támogatott</string>
     <string name="support_no">nem támogatott (a rendszer általános mintára esik vissza)</string>
     <string name="support_unknown">nem ellenőrizhető ezen az API-szinten</string>

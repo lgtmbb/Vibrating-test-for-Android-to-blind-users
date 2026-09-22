@@ -109,25 +109,45 @@ támaszkodunk.
   külön szabályozható beállításként, mivel nem ad kézzelfogható,
   felhasználó által állítható paramétert - csak információs adat.
 
-## API 36 (Android 16) - a jelenlegi határ
+## API 36 (Android 16) - most már implementálva
 
-- `VibrationEffect.BasicEnvelopeBuilder` / `VibrationEffect.WaveformEnvelopeBuilder`:
-  vezérlőpontokból (intenzitás/élesség, vagy amplitúdó/frekvencia Hz-ben +
-  időtartam) felépített, folytonos hullámforma-effektusok. A
-  `WaveformEnvelopeBuilder` a rezgőmotor tényleges frekvencia-tartományát
-  (`VibratorFrequencyProfile`) is figyelembe tudja venni, így pl. a
-  rezonanciafrekvencia felé és onnan visszafelé mozgó, dinamikusan
-  változó "hangmagasságú" rezgés hozható létre.
-- `Vibrator.areEnvelopeEffectsSupported()`: a támogatottság ellenőrzésére.
-- **Ezt a projekt (egyelőre) nem használja.** Két oka van: (1) API 36
-  bevezetése óta eltelt idő rövid, a célközönség (blind Android-felhasználók,
-  gyakran régebbi vagy középkategóriás készülékkel) eszközparkjában még
-  elenyésző az ilyen friss verziójú telefon; (2) a projekt jelenlegi
-  `compileSdk`-ja (34) mellett a fordításhoz is emelni kellene a célzott
-  API-szintet. Ha ez később mégis indokolttá válik (pl. a "Kiszámíthatatlan
-  mód" frekvencia-alapú változatához), ez a szakasz jelzi, hogy a
-  dokumentáció ismerete megvan hozzá.
-- Forrás: [Create custom haptic effects - Vibration waveform with envelopes](https://developer.android.com/develop/ui/views/haptics/custom-haptic-effects#vibration-waveform-with-envelopes)
+- `VibrationEffect.BasicEnvelopeBuilder`: vezérlőpontokból (intenzitás
+  0.0-1.0, élesség 0.0-1.0, időtartam ms) felépített, folytonosan változó
+  hullámforma-effektus (PWLE - Piecewise-Linear Envelope). A rezgőmotor
+  simán átmegy egyik vezérlőpontból a másikba, ellentétben a
+  `Composition` primitívek diszkrét "kattanásaival". A pontos szignatúra:
+  `addControlPoint(intensity: Float, sharpness: Float, durationMillis: Long)`,
+  visszatérési típusa maga a builder (láncolható). A hivatalos példa és
+  a keretrendszer elvárása szerint az utolsó vezérlőpontnak 0.0
+  intenzitásúnak kell lennie (a lezáráshoz); a kezdő 0-intenzitású pontot a
+  keretrendszer automatikusan beszúrja, azt nem kell kézzel megadni.
+  `setInitialSharpness(Float)` opcionális, hiányában az első vezérlőpont
+  élességét használja.
+- `VibrationEffect.WaveformEnvelopeBuilder`: a fejlettebb testvér - itt
+  amplitúdó (0.0-1.0) és tényleges frekvencia (Hz) párokkal lehet
+  vezérlőpontokat megadni, a rezgőmotor tényleges frekvencia-tartományát
+  (`VibratorFrequencyProfile`) figyelembe véve. **Ezt a projekt egyelőre
+  nem használja** - a `BasicEnvelopeBuilder` intenzitás/élesség
+  párosítása eszközfüggetlenebb és egyszerűbb, és a "Kiszámíthatatlan
+  mód" céljára (változatos, félrevezethetetlen mintázat) ez elegendő; a
+  `WaveformEnvelopeBuilder` konkrét Hz-értékei csak akkor adnának
+  hozzáadott értéket, ha a cél kifejezetten egy adott érzékelt
+  "hangmagasság" elérése lenne.
+- `Vibrator.areEnvelopeEffectsSupported()`: a támogatottság ellenőrzésére -
+  ezt a `VibrationCapabilities` a Beállítások "Eszköz képességei"
+  szakaszában is megjeleníti.
+- **Hol használja a projekt**: a "Kiszámíthatatlan mód" egyik lehetséges
+  "íze" (`TrulyRandomFlavor.ENVELOPE`), amikor `SDK_INT >= 36` és
+  `areEnvelopeEffectsSupported()` igazat ad. 1-2 véletlenszerű köztes
+  vezérlőpontot épít fel véletlenszerű intenzitással és élességgel, majd
+  a kötelező, 0 intenzitású záró ponttal.
+- Ehhez a `compileSdk` 34-ről 36-ra, az Android Gradle Plugin 8.5.2-ről
+  8.13.0-ra lett emelve (ez az első AGP-verzió, ami hivatalosan
+  API 36.1-ig támogatott, és még a régi, megszokott Groovy DSL-lel
+  működik - az AGP 9.x már törné a build.gradle jelenlegi szerkezetét).
+  A `targetSdk` szándékosan maradt 34-en.
+- Forrás: [Create custom haptic effects - Vibration waveform with envelopes](https://developer.android.com/develop/ui/views/haptics/custom-haptic-effects#vibration-waveform-with-envelopes),
+  [Implement piecewise linear envelope effects (AOSP)](https://source.android.com/docs/core/interaction/haptics/haptics-pwle)
 
 ## Amit szándékosan nem tettünk beállítássá
 
@@ -135,11 +155,13 @@ támaszkodunk.
   Android 12+)**: a legtöbb telefonon egyetlen motor van, és a teszt célja
   (visszajelzés-minták demonstrálása) nem igényli motoronkénti
   megkülönböztetést.
-- **Envelope/frekvencia-alapú egyedi hullámformák (Android 13+,
-  `VibrationEffect.Composition.addPrimitive` haladó paraméterezése)**: ez
-  már nem egy-két csúszkával leírható beállítás, hanem egy teljes
-  hullámforma-szerkesztő lenne - ha ez is kell, jelezd, külön kiegészítő
-  fejlesztésként megoldható.
+- **`WaveformEnvelopeBuilder` (Android 16+, konkrét Hz-frekvenciákkal
+  megadott vezérlőpontok)**: a `BasicEnvelopeBuilder` (intenzitás/élesség
+  alapú, eszközfüggetlenebb) változata már implementálva van a
+  Kiszámíthatatlan módban; a frekvencia-alapú, `VibratorFrequencyProfile`-t
+  igénylő verzió továbbra sem egy-két csúszkával leírható felhasználói
+  beállítás, hanem egy teljes hullámforma-szerkesztő lenne - ha ez is
+  kell, jelezd, külön kiegészítő fejlesztésként megoldható.
 
 ## Fő hivatkozások
 

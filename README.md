@@ -38,14 +38,28 @@ Az új, 5. gombként elérhető **Kiszámíthatatlan mód** minden lehetséges
 paramétert egymástól függetlenül, széles tartományban véletlenszerűsít
 lüktetésenként - nem csak a hosszt és a szünetet, hanem az erősséget és
 magát a rezgés "típusát" is (egyéni hullámforma / előre definiált effektus
-/ összetett primitívek közül véletlenszerűen választva, amelyik éppen
-elérhető a készüléken), és ciklusonként 1-3 lüktetésből álló, véletlenszerű
-belső résekkel tagolt "eseményeket" játszik le. Ezért nem korlátozza a
-Beállítások duration/pause/rezgéstípus értéke - azok csak a Következetlen
-módot vezérlik. A cél kifejezetten az volt, hogy ne alakulhasson ki idővel
+/ összetett primitívek / Android 16-os envelope-effektus közül
+véletlenszerűen választva, amelyik éppen elérhető a készüléken), és
+ciklusonként 1-3 lüktetésből álló, véletlenszerű belső résekkel tagolt
+"eseményeket" játszik le. Ezért nem korlátozza a Beállítások
+duration/pause/rezgéstípus értéke - azok csak a Következetlen módot
+vezérlik. A cél kifejezetten az volt, hogy ne alakulhasson ki idővel
 felismerhető ritmus vagy minta. A `VIBRATION_API_RESEARCH.md`-ben
 dokumentáltam a hozzá használt `Composition.addPrimitive(id, scale, delay)`
-API pontos működését és a hivatalos tervezési ajánlásokat is.
+és `VibrationEffect.BasicEnvelopeBuilder` API-k pontos működését és a
+hivatalos tervezési ajánlásokat is.
+
+**Fontos korlát, amit érdemes tudni**: sok, főleg olcsóbb, ERM-motoros (nem
+LRA) készülék hardver szinten egyáltalán nem támogatja az
+erősségszabályzást (`hasAmplitudeControl()` hamisat ad) - ezt a
+Beállítások "Eszköz képessége" szakasza is kiírja. Ilyen készüléken az
+erősség ténylegesen nem tud változni - ez nem szoftverhiba, hanem a
+motor fizikai korlátja. Hogy a mód ettől függetlenül is érezhetően
+változatos maradjon, az "egyéni hullámforma" íz lüktetésenként
+véletlenszerűen választ egy sima, folytonos impulzus és egy apró,
+mikro-lüktetésekből álló, "recés" sorozat között - ez a hullámforma
+*szerkezetét* teszi véletlenszerűvé, ami erősségszabályzás nélkül is
+másképp érződik.
 
 ## Amit hozzáadtam: "Folytatás képernyőzár után is" jelölőnégyzet
 

@@ -5,14 +5,18 @@ plugins {
 
 android {
     namespace 'com.example.vibrationtester'
-    compileSdk 34
+    // 36-ra emelve, hogy az Android 16-os envelope/frekvencia API
+    // (VibrationEffect.BasicEnvelopeBuilder, API 36) elérhető legyen
+    // fordításkor. A targetSdk szándékosan marad 34-en, hogy a régebbi
+    // viselkedés a többi funkción ne változzon.
+    compileSdk 36
 
     defaultConfig {
         applicationId "com.example.vibrationtester"
         minSdk 24
         targetSdk 34
-        versionCode 4
-        versionName "1.3.0"
+        versionCode 5
+        versionName "1.4.0"
     }
 
     buildTypes {

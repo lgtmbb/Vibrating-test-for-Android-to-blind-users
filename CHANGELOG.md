@@ -5,6 +5,41 @@ egy .zip-be csomagolt fájlból állt, teljes build-rendszer nélkül. Ez a
 verzió az első, ami tényleges, lefordítható Android Studio projektként van
 strukturálva.
 
+## [1.4.0]
+
+### Javítva
+- A "Kiszámíthatatlan mód" jelzett hibája: még amplitúdó-szabályzás
+  nélküli (a legtöbb olcsóbb, ERM-motoros) készüléken is érezhetően
+  változatos maradjon. Eddig ilyen hardveren minden lüktetés
+  `VibrationEffect.DEFAULT_AMPLITUDE`-del futott (ez helyes, a hardver
+  valódi korlátja - nem hiba), de emiatt a mód monotonnak tűnhetett. Mostantól
+  az "egyéni hullámforma" íz lüktetésenként véletlenszerűen választ egy
+  sima, folytonos impulzus és egy apró (2-6 szegmenses) mikro-lüktetés-
+  sorozat között - ez a hullámforma SZERKEZETÉT teszi véletlenszerűvé,
+  ami erősségszabályzás nélkül is másképp érződik.
+
+### Hozzáadva
+- **Envelope-effektus (Android 16, API 36) mint új "íz" a Kiszámíthatatlan
+  módban**: `VibrationEffect.BasicEnvelopeBuilder`-rel felépített,
+  folytonosan változó intenzitású/élességű rezgés, véletlenszerű
+  vezérlőpontokkal. Csak akkor kerül a lehetséges ízek közé, ha
+  `Vibrator.areEnvelopeEffectsSupported()` igazat ad az adott készüléken.
+  A támogatottság (vagy annak hiánya) a Beállítások "Eszköz képességei"
+  szakaszában is megjelenik.
+- `VIBRATION_API_RESEARCH.md` kiegészítve az envelope API pontos
+  szignatúrájával és forrásaival; a korábban "egyelőre nem implementálva"
+  jelzés törölve, mivel ez a verzió már használja.
+
+### Változott
+- `compileSdk` 34-ről 36-ra emelve (az envelope API eléréséhez),
+  `targetSdk` szándékosan maradt 34-en. Android Gradle Plugin 8.5.2-ről
+  8.13.0-ra emelve (ez az első hivatalosan API 36.1-ig támogatott AGP,
+  ami még nem igényli az AGP 9.x törő DSL-váltását).
+- A CI workflow-ban a Gradle wrapper verziója 8.7-ről 8.13-ra emelve (ezt
+  az AGP 8.13.0 megköveteli), és egy explicit `sdkmanager` lépés
+  hozzáadva az Android 36-os platform/build-tools telepítéséhez, mert a
+  futtatógép előre telepített SDK-ja nem feltétlenül tartalmazza még.
+
 ## [1.3.0]
 
 ### Átnevezve

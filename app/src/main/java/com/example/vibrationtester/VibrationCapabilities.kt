@@ -32,7 +32,9 @@ object VibrationCapabilities {
         val compositionApiExists: Boolean, // API >= 30 (Android 11)
         val primitives: List<PrimitiveInfo>,
         val resonantFrequencyHz: Float?, // API >= 33 (Android 13) és csak ha a hardver jelenti
-        val qFactor: Float?
+        val qFactor: Float?,
+        val envelopeApiExists: Boolean, // API >= 36 (Android 16)
+        val hasEnvelopeSupport: Boolean // a fentiek ÉS a hardver ténylegesen támogatja
     )
 
     fun buildReport(vibrator: Vibrator): Report {
@@ -66,6 +68,11 @@ object VibrationCapabilities {
             qFactor = if (!q.isNaN()) q else null
         }
 
+        // Az envelope/PWLE-alapú effektusok (BasicEnvelopeBuilder) API 36-tól
+        // (Android 16) léteznek, és saját futásidejű ellenőrzésük van.
+        val envelopeApiExists = sdkInt >= 36
+        val hasEnvelopeSupport = envelopeApiExists && hasVibrator && vibrator.areEnvelopeEffectsSupported()
+
         return Report(
             sdkInt = sdkInt,
             hasVibrator = hasVibrator,
@@ -77,7 +84,9 @@ object VibrationCapabilities {
             compositionApiExists = compositionApiExists,
             primitives = primitives,
             resonantFrequencyHz = resonantFrequency,
-            qFactor = qFactor
+            qFactor = qFactor,
+            envelopeApiExists = envelopeApiExists,
+            hasEnvelopeSupport = hasEnvelopeSupport
         )
     }
 

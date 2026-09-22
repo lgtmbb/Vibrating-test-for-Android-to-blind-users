@@ -135,6 +135,15 @@ class SettingsActivity : AppCompatActivity() {
         val qText = report.qFactor?.let { getString(R.string.capability_q_factor, it) }
             ?: getString(R.string.capability_q_factor_unavailable)
         addCapabilityLine(container, qText)
+
+        if (!report.envelopeApiExists) {
+            addCapabilityLine(container, getString(R.string.capability_envelope_os_unavailable))
+        } else {
+            addCapabilityLine(
+                container,
+                getString(if (report.hasEnvelopeSupport) R.string.capability_envelope_yes else R.string.capability_envelope_no)
+            )
+        }
     }
 
     private fun supportLabelFor(support: VibrationCapabilities.Support): String = when (support) {

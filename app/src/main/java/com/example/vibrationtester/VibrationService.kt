@@ -278,16 +278,29 @@ class VibrationService : Service() {
 
     // 5. Truly Unpredictable Mode ("Kiszámíthatatlan mód"): minden lehetséges
     // paramétert - erősség, hossz, szünet, rezgéstípus (egyéni hullámforma /
-    // előre definiált effektus / összetett primitívek), sőt a lüktetések
-    // száma egy-egy "eseményen" belül is - egymástól függetlenül, széles
-    // tartományban véletlenszerűsít minden ciklusban. Szándékosan NEM
-    // használja a Beállításokban megadott duration/pause/unpredictability/
-    // vibrationType értékeket - azok a Következetlen módot vezérlik -, hogy
-    // a szórás mértéke ne legyen felülről korlátozva, és az agy ne tudjon
-    // idővel mintát felismerni benne. A rendelkezésre álló "ízek" (egyéni,
-    // előre definiált, összetett) közül csak azokat választja, amelyeket a
-    // VibrationCapabilities ténylegesen támogatottnak (vagy Android 10-en
-    // nem ellenőrizhetőnek) jelez az adott készüléken.
+    // előre definiált effektus / összetett primitívek / Android 16-os
+    // envelope-effektus), sőt a lüktetések száma és BELSŐ SZERKEZETE (egy
+    // sima, folytonos impulzus vagy egy apró mikro-lüktetésekből álló,
+    // "recés" sorozat) egy-egy "eseményen" belül is - egymástól
+    // függetlenül, széles tartományban véletlenszerűsít minden ciklusban.
+    //
+    // Fontos: az erősségszabályzás (hasAmplitudeControl) sok, főleg
+    // olcsóbb, ERM-motoros (nem LRA) készüléken a hardver szintjén
+    // egyáltalán nem létezik - ilyenkor a VibrationEffect.DEFAULT_AMPLITUDE
+    // az egyetlen lehetséges érték, és ez NEM hiba, hanem a hardver valódi
+    // korlátja (ezt a Beállítások "Eszköz képességei" szakasza is kiírja).
+    // Hogy a mód ettől függetlenül is érezhetően változatos maradjon, a
+    // mikro-lüktetés-sorozat (lásd lent) a hullámforma SZERKEZETÉT - nem az
+    // erősségét - változtatja, ami erősségszabályzás nélkül is más
+    // tapintási élményt ad, mint egy sima, folytonos impulzus.
+    //
+    // Szándékosan NEM használja a Beállításokban megadott
+    // duration/pause/unpredictability/vibrationType értékeket - azok a
+    // Következetlen módot vezérlik -, hogy a szórás mértéke ne legyen
+    // felülről korlátozva, és az agy ne tudjon idővel mintát felismerni
+    // benne. A rendelkezésre álló "ízek" közül csak azokat választja,
+    // amelyeket a VibrationCapabilities ténylegesen támogatottnak (vagy
+    // Android 10-en nem ellenőrizhetőnek) jelez az adott készüléken.
     private suspend fun CoroutineScope.runTrulyRandom() {
         val report = VibrationCapabilities.buildReport(vibrator)
         val hasAmplitude = report.hasAmplitudeControl
@@ -297,6 +310,7 @@ class VibrationService : Service() {
         val primitiveCandidates = report.primitives
             .filter { it.supported }
             .map { it.id }
+        val envelopeAvailable = report.hasEnvelopeSupport
 
         val flavors = mutableListOf(TrulyRandomFlavor.CUSTOM)
         if (report.predefinedEffectsApiExists && predefinedCandidates.isNotEmpty()) {
@@ -304,6 +318,9 @@ class VibrationService : Service() {
         }
         if (report.compositionApiExists && primitiveCandidates.isNotEmpty()) {
             flavors.add(TrulyRandomFlavor.COMPOSITION)
+        }
+        if (envelopeAvailable) {
+            flavors.add(TrulyRandomFlavor.ENVELOPE)
         }
 
         while (isActive) {
@@ -314,10 +331,34 @@ class VibrationService : Service() {
             for (index in 0 until burstSize) {
                 when (flavors.random()) {
                     TrulyRandomFlavor.CUSTOM -> {
-                        val duration = Random.nextLong(20L, 1500L)
-                        val amplitude = if (hasAmplitude) Random.nextInt(1, 256) else VibrationEffect.DEFAULT_AMPLITUDE
-                        vibrateOneShot(duration, amplitude)
-                        delay(duration)
+                        if (Random.nextBoolean()) {
+                            // Sima, folytonos impulzus.
+                            val duration = Random.nextLong(20L, 1500L)
+                            val amplitude = if (hasAmplitude) Random.nextInt(1, 256) else VibrationEffect.DEFAULT_AMPLITUDE
+                            vibrateOneShot(duration, amplitude)
+                            delay(duration)
+                        } else {
+                            // Mikro-lüktetés-sorozat: a hullámforma SZERKEZETÉT
+                            // teszi véletlenszerűvé (hány rövid be/ki szakaszból
+                            // áll, milyen hosszúak) - ez erősségszabályzás
+                            // NÉLKÜL is más tapintási benyomást kelt, mint egy
+                            // sima impulzus.
+                            val segmentCount = Random.nextInt(2, 7)
+                            val timings = LongArray(segmentCount * 2)
+                            val amplitudes = IntArray(segmentCount * 2)
+                            var total = 0L
+                            for (i in 0 until segmentCount) {
+                                val onMs = Random.nextLong(15L, 120L)
+                                val offMs = Random.nextLong(10L, 100L)
+                                timings[i * 2] = onMs
+                                timings[i * 2 + 1] = offMs
+                                amplitudes[i * 2] = if (hasAmplitude) Random.nextInt(1, 256) else 255
+                                amplitudes[i * 2 + 1] = 0
+                                total += onMs + offMs
+                            }
+                            vibrateWaveform(timings, amplitudes)
+                            delay(total)
+                        }
                     }
                     TrulyRandomFlavor.PREDEFINED -> {
                         val effectId = predefinedCandidates.random()
@@ -336,6 +377,28 @@ class VibrationService : Service() {
                         vibrator.vibrate(composition.compose())
                         delay(Random.nextLong(80L, 400L))
                     }
+                    TrulyRandomFlavor.ENVELOPE -> {
+                        // Android 16 (API 36): PWLE-alapú, folytonosan változó
+                        // intenzitású/élességű hullámforma - 1-2 köztes,
+                        // véletlenszerű vezérlőpont, majd a kötelező, nullára
+                        // visszatérő záró pont.
+                        val builder = VibrationEffect.BasicEnvelopeBuilder()
+                        var total = 0L
+                        val pointCount = Random.nextInt(1, 3)
+                        repeat(pointCount) {
+                            val intensity = Random.nextDouble(0.15, 1.0).toFloat()
+                            val sharpness = Random.nextDouble(0.0, 1.0).toFloat()
+                            val pointDuration = Random.nextLong(40L, 220L)
+                            builder.addControlPoint(intensity, sharpness, pointDuration)
+                            total += pointDuration
+                        }
+                        val closingSharpness = Random.nextDouble(0.0, 1.0).toFloat()
+                        val closingDuration = Random.nextLong(40L, 150L)
+                        builder.addControlPoint(0f, closingSharpness, closingDuration)
+                        total += closingDuration
+                        vibrator.vibrate(builder.build())
+                        delay(total)
+                    }
                 }
                 if (index < burstSize - 1) {
                     delay(Random.nextLong(10L, 150L))
@@ -348,7 +411,16 @@ class VibrationService : Service() {
         }
     }
 
-    private enum class TrulyRandomFlavor { CUSTOM, PREDEFINED, COMPOSITION }
+    private enum class TrulyRandomFlavor { CUSTOM, PREDEFINED, COMPOSITION, ENVELOPE }
+
+    private fun vibrateWaveform(timings: LongArray, amplitudes: IntArray) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            vibrator.vibrate(VibrationEffect.createWaveform(timings, amplitudes, -1))
+        } else {
+            @Suppress("DEPRECATION")
+            vibrator.vibrate(timings, -1)
+        }
+    }
 
     /**
      * Egyetlen rezgési impulzus lejátszása a beállított típus szerint:
