@@ -57,17 +57,17 @@
             android:layout_marginBottom="16dp"
             android:contentDescription="@string/desc_pulsing_button" />
 
-        <!-- 3. Unpredictable Mode -->
+        <!-- 3. Inconsistent Mode (formerly "Unpredictable") -->
         <Button
-            android:id="@+id/btnUnpredictable"
+            android:id="@+id/btnInconsistent"
             android:layout_width="match_parent"
             android:layout_height="70dp"
-            android:text="@string/mode_unpredictable_button"
+            android:text="@string/mode_inconsistent_button"
             android:textSize="18sp"
             android:backgroundTint="#333333"
             android:textColor="#FFFFFF"
             android:layout_marginBottom="16dp"
-            android:contentDescription="@string/desc_unpredictable_button" />
+            android:contentDescription="@string/desc_inconsistent_button" />
 
         <!-- 4. Vacuum Mode -->
         <Button
@@ -78,8 +78,20 @@
             android:textSize="18sp"
             android:backgroundTint="#333333"
             android:textColor="#FFFFFF"
-            android:layout_marginBottom="32dp"
+            android:layout_marginBottom="16dp"
             android:contentDescription="@string/desc_vacuum_button" />
+
+        <!-- 5. Truly Unpredictable Mode (new) -->
+        <Button
+            android:id="@+id/btnTrulyRandom"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:text="@string/mode_truly_random_button"
+            android:textSize="18sp"
+            android:backgroundTint="#333333"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="32dp"
+            android:contentDescription="@string/desc_truly_random_button" />
 
         <!-- Stop Button -->
         <Button

@@ -5,6 +5,50 @@ egy .zip-be csomagolt fájlból állt, teljes build-rendszer nélkül. Ez a
 verzió az első, ami tényleges, lefordítható Android Studio projektként van
 strukturálva.
 
+## [1.3.0]
+
+### Átnevezve
+- A korábbi "Kiszámíthatatlan mód" (3. gomb) mostantól **"Következetlen
+  mód"** (Inconsistent Mode) néven fut. A működése nem változott: a
+  Beállításokban megadott hossz/szünet körül, a "Kiszámíthatatlanság
+  mértéke" csúszka által vezérelt mértékben szór.
+
+### Hozzáadva
+- **Új, 5. mód: "Kiszámíthatatlan mód"** (Truly Unpredictable), ami jóval
+  erősebben véletlenszerű, mint a Következetlen mód, szándékosan úgy, hogy
+  ne alakuljon ki felismerhető minta:
+  - Ciklusonként 1-3 lüktetésből álló "eseményeket" játszik le, a
+    lüktetések közt apró, véletlenszerű réssel.
+  - Minden egyes lüktetés függetlenül, egymástól elválasztva
+    véletlenszerűsíti: az erősséget (ha a hardver támogatja), a hosszt, és
+    a rezgés "típusát" (egyéni hullámforma / előre definiált effektus /
+    összetett primitívek - amelyik éppen elérhető a készüléken).
+  - Összetett primitívek választásakor a primitívek számát, sorrendjét, az
+    egyes primitívek erősség-szorzóját (`scale`) és a köztük lévő
+    késleltetést (`delay`) is véletlenszerűsíti, az
+    `VibrationEffect.Composition.addPrimitive(id, scale, delay)` API
+    kihasználásával.
+  - A ciklusok közti szünet lényegesen szélesebb, teljesen független
+    tartományban véletlenszerű, mint a Következetlen módé.
+  - Szándékosan nem használja a Beállítások duration/pause/
+    kiszámíthatatlanság-mérték/rezgéstípus értékeit - ezek csak a
+    Következetlen módot vezérlik -, hogy a szórás mértéke felülről ne
+    legyen korlátozva.
+- `VIBRATION_API_RESEARCH.md` kiegészítve: a `Composition.addPrimitive`
+  `scale`/`delay` paramétereinek tervezési ajánlásaival, és egy új
+  szakasszal az Android 16 (API 36) hullámforma-envelope API-król
+  (`BasicEnvelopeBuilder`, `WaveformEnvelopeBuilder`), amit a projekt
+  jelenleg (a célközönség eszközparkja és a compileSdk miatt) még nem
+  használ, de dokumentál a jövőbeli bővítéshez.
+
+### Változott
+- A gombok újraszámozva: 1. Állandó, 2. Pulzáló, 3. Következetlen, 4.
+  Vákuum, 5. Kiszámíthatatlan, majd Leállítás, majd 6. Beállítások.
+- A Beállítások képernyőn az erősség/hossz/szünet/kiszámíthatatlanság-
+  mérték/rezgéstípus leírásai pontosítva, hogy egyértelmű legyen: ezek csak
+  az Állandó, Pulzáló és Következetlen módot érintik, az új Kiszámíthatatlan
+  módot nem.
+
 ## [1.2.0]
 
 ### Hozzáadva

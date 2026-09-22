@@ -5,19 +5,22 @@
 
     <string name="mode_consistent_button">1. Állandó Mód (Consistent)</string>
     <string name="mode_pulsing_button">2. Pulzáló Mód (Pulsing)</string>
-    <string name="mode_unpredictable_button">3. Kiszámíthatatlan (Unpredictable)</string>
+    <string name="mode_inconsistent_button">3. Következetlen Mód (Inconsistent)</string>
     <string name="mode_vacuum_button">4. Szívó / Vákuum Mód (Vacuum)</string>
+    <string name="mode_truly_random_button">5. Kiszámíthatatlan Mód (Truly Unpredictable)</string>
     <string name="stop_button">Leállítás</string>
 
     <string name="mode_consistent_short">Állandó mód</string>
     <string name="mode_pulsing_short">Pulzáló mód</string>
-    <string name="mode_unpredictable_short">Kiszámíthatatlan mód</string>
+    <string name="mode_inconsistent_short">Következetlen mód</string>
     <string name="mode_vacuum_short">Vákuum mód</string>
+    <string name="mode_truly_random_short">Kiszámíthatatlan mód</string>
 
     <string name="desc_consistent_button">Állandó Mód gomb. Folyamatos, szünet nélküli rezgést indít.</string>
     <string name="desc_pulsing_button">Pulzáló Mód gomb. Ritmikus, szabályos időközönként ismétlődő rezgést indít.</string>
-    <string name="desc_unpredictable_button">Kiszámíthatatlan Mód gomb. Véletlenszerű hosszúságú és szünetű rezgéseket indít.</string>
+    <string name="desc_inconsistent_button">Következetlen Mód gomb. A Beállításokban megadott hossz és szünet körül, mérsékelt mértékben véletlenszerű rezgéseket indít.</string>
     <string name="desc_vacuum_button">Vákuum Mód gomb. Fokozatosan erősödő, majd hirtelen megszakadó rezgést indít, mintha beszívás történne.</string>
+    <string name="desc_truly_random_button">Kiszámíthatatlan Mód gomb. Minden egyes rezgésnél az erősséget, a hosszt, a szünetet, a rezgés jellegét és a lüktetések számát is véletlenszerűen, széles tartományban változtatja - jóval erősebben, mint a Következetlen mód -, hogy ne alakuljon ki felismerhető minta.</string>
     <string name="desc_stop_button">Leállítás gomb. Az összes folyamatban lévő rezgést azonnal megszakítja.</string>
     <string name="desc_keep_alive_checkbox">Folytatás képernyőzár után. Ha be van jelölve, a rezgés a képernyő lezárása vagy az alkalmazás háttérbe kerülése után is folytatódik, egy értesítés jelzi a futást.</string>
 
@@ -25,8 +28,9 @@
 
     <string name="announce_consistent">Állandó rezgés mód elindítva</string>
     <string name="announce_pulsing">Pulzáló rezgés mód elindítva</string>
-    <string name="announce_unpredictable">Kiszámíthatatlan rezgés mód elindítva</string>
+    <string name="announce_inconsistent">Következetlen rezgés mód elindítva</string>
     <string name="announce_vacuum">Vákuum rezgés mód elindítva</string>
+    <string name="announce_truly_random">Kiszámíthatatlan rezgés mód elindítva</string>
     <string name="announce_stop">Rezgések leállítva</string>
     <string name="announce_keep_alive_on">Képernyőzár utáni folytatás bekapcsolva</string>
     <string name="announce_keep_alive_off">Képernyőzár utáni folytatás kikapcsolva</string>
@@ -35,7 +39,7 @@
     <string name="notification_title">Rezgés Tesztelő aktív</string>
 
     <!-- Settings button on the main screen -->
-    <string name="settings_button">5. Beállítások</string>
+    <string name="settings_button">6. Beállítások</string>
     <string name="desc_settings_button">Beállítások gomb. Megnyitja a rezgés erősségét, hosszát, szünetét és egyéb részleteit szabályozó képernyőt.</string>
     <string name="announce_already_running">Már fut ez a mód, a gomb nem indította újra</string>
 
@@ -62,26 +66,26 @@
 
     <string name="settings_section_amplitude">Rezgés erőssége</string>
     <string name="use_custom_amplitude_label">Egyéni erősség használata</string>
-    <string name="use_custom_amplitude_description">Ha ki van kapcsolva, a rendszer alapértelmezett erősségét használja az alkalmazás. Csak Android 8.0-tól és csak olyan hardveren módosítható, amely jelzi az erősségszabályzás támogatását - ha nem elérhető, ez a kapcsoló le van tiltva.</string>
+    <string name="use_custom_amplitude_description">Ha ki van kapcsolva, a rendszer alapértelmezett erősségét használja az alkalmazás. Csak Android 8.0-tól és csak olyan hardveren módosítható, amely jelzi az erősségszabályzás támogatását - ha nem elérhető, ez a kapcsoló le van tiltva. A Kiszámíthatatlan mód ezt a beállítást nem veszi figyelembe, mert ott az erősség minden lüktetésnél önmagában is véletlenszerű.</string>
     <string name="amplitude_value_format">Erősség: %1$d / 255</string>
 
     <string name="settings_section_duration">Rezgés hossza</string>
     <string name="duration_label">Rezgés hossza ezredmásodpercben (ms)</string>
-    <string name="duration_description">Az Állandó, Pulzáló és Kiszámíthatatlan mód rezgési impulzusainak hossza. A Vákuum mód ezt nem használja, mert ott a lépésenkénti 40ms-es ütem adja a mód jellegét.</string>
+    <string name="duration_description">Az Állandó, Pulzáló és Következetlen mód rezgési impulzusainak hossza (a Következetlen módnál ez csak a szórás középpontja). A Vákuum mód ezt nem használja. A Kiszámíthatatlan mód szintén nem veszi figyelembe - ott a hossz minden lüktetésnél önállóan, széles tartományban véletlenszerű.</string>
 
     <string name="settings_section_pause">Szünet hossza</string>
     <string name="pause_label">Szünet hossza ezredmásodpercben (ms)</string>
-    <string name="pause_description">A Pulzáló mód impulzusai közti szünet, a Kiszámíthatatlan mód szünetének alapértéke, és a Vákuum mód ciklusai közti szünet.</string>
+    <string name="pause_description">A Pulzáló mód impulzusai közti szünet, a Következetlen mód szünetének alapértéke (a szórás középpontja), és a Vákuum mód ciklusai közti szünet. A Kiszámíthatatlan mód ezt sem veszi figyelembe - ott a szünet is önállóan véletlenszerű, jóval szélesebb tartományban.</string>
 
-    <string name="settings_section_unpredictability">Kiszámíthatatlanság mértéke</string>
-    <string name="unpredictability_label">Mennyire térjen el véletlenszerűen a Kiszámíthatatlan mód a fenti hossz- és szünetértékektől</string>
+    <string name="settings_section_unpredictability">Kiszámíthatatlanság mértéke (Következetlen módhoz)</string>
+    <string name="unpredictability_label">Mennyire térjen el véletlenszerűen a Következetlen mód a fenti hossz- és szünetértékektől. A Kiszámíthatatlan mód nem ezt használja - az mindig a maximális, függetlenített véletlenszerűséggel fut.</string>
     <string name="unpredictability_value_format">%1$d%%</string>
 
-    <string name="settings_section_vibration_type">Rezgéstípus</string>
+    <string name="settings_section_vibration_type">Rezgéstípus (Állandó, Pulzáló, Következetlen módhoz)</string>
     <string name="vibration_type_custom">Egyéni hullámforma (a fenti erősség és hossz alapján)</string>
     <string name="vibration_type_predefined">Előre definiált effektus (Android 10-től)</string>
     <string name="vibration_type_composition">Összetett primitívek (Android 11-től)</string>
-    <string name="vibration_type_description">Az Állandó, Pulzáló és Kiszámíthatatlan mód ezt a típust használja minden impulzushoz. A Vákuum mód mindig az egyéni hullámformát használja, függetlenül ettől a beállítástól, mert a fokozatos erősödés a lényege, amit a másik két típus nem tud kifejezni.</string>
+    <string name="vibration_type_description">Az Állandó, Pulzáló és Következetlen mód ezt a típust használja minden impulzushoz. A Vákuum mód mindig az egyéni hullámformát használja. A Kiszámíthatatlan mód mindhárom típus (egyéni hullámforma, előre definiált effektus, összetett primitívek) közül véletlenszerűen választ lüktetésenként, ettől a beállítástól függetlenül - minél többet támogat a készülék, annál változatosabb.</string>
 
     <string name="settings_section_predefined_effect">Melyik előre definiált effektus</string>
     <string name="settings_section_composition">Mely primitívek szerepeljenek az összetett rezgésben</string>

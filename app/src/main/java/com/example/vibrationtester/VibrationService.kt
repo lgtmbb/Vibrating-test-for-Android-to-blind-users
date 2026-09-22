@@ -53,8 +53,9 @@ class VibrationService : Service() {
 
         const val MODE_CONSISTENT = 0
         const val MODE_PULSING = 1
-        const val MODE_UNPREDICTABLE = 2
+        const val MODE_INCONSISTENT = 2
         const val MODE_VACUUM = 3
+        const val MODE_TRULY_RANDOM = 4
 
         private const val CHANNEL_ID = "vibration_service_channel"
         private const val NOTIFICATION_ID = 1
@@ -206,8 +207,9 @@ class VibrationService : Service() {
             when (mode) {
                 MODE_CONSISTENT -> runConsistent()
                 MODE_PULSING -> runPulsing()
-                MODE_UNPREDICTABLE -> runUnpredictable()
+                MODE_INCONSISTENT -> runInconsistent()
                 MODE_VACUUM -> runVacuum()
+                MODE_TRULY_RANDOM -> runTrulyRandom()
             }
         }
     }
@@ -238,9 +240,10 @@ class VibrationService : Service() {
         }
     }
 
-    // 3. Unpredictable Mode: a beállított duration/pause körül véletlenszerűen
-    // szór, a "Kiszámíthatatlanság mértéke" (0-100%) csúszka által vezérelve.
-    private suspend fun CoroutineScope.runUnpredictable() {
+    // 3. Inconsistent Mode (korábban "Kiszámíthatatlan"): a beállított
+    // duration/pause körül mérsékelten véletlenszerűen szór, a
+    // "Kiszámíthatatlanság mértéke" (0-100%) csúszka által vezérelve.
+    private suspend fun CoroutineScope.runInconsistent() {
         while (isActive) {
             val variance = settings.unpredictabilityPercent / 100.0
             val duration = randomizedValue(settings.durationMs, variance)
@@ -272,6 +275,80 @@ class VibrationService : Service() {
         val factor = 1.0 + Random.nextDouble(-variance, variance)
         return (base * factor).toLong().coerceAtLeast(20L)
     }
+
+    // 5. Truly Unpredictable Mode ("Kiszámíthatatlan mód"): minden lehetséges
+    // paramétert - erősség, hossz, szünet, rezgéstípus (egyéni hullámforma /
+    // előre definiált effektus / összetett primitívek), sőt a lüktetések
+    // száma egy-egy "eseményen" belül is - egymástól függetlenül, széles
+    // tartományban véletlenszerűsít minden ciklusban. Szándékosan NEM
+    // használja a Beállításokban megadott duration/pause/unpredictability/
+    // vibrationType értékeket - azok a Következetlen módot vezérlik -, hogy
+    // a szórás mértéke ne legyen felülről korlátozva, és az agy ne tudjon
+    // idővel mintát felismerni benne. A rendelkezésre álló "ízek" (egyéni,
+    // előre definiált, összetett) közül csak azokat választja, amelyeket a
+    // VibrationCapabilities ténylegesen támogatottnak (vagy Android 10-en
+    // nem ellenőrizhetőnek) jelez az adott készüléken.
+    private suspend fun CoroutineScope.runTrulyRandom() {
+        val report = VibrationCapabilities.buildReport(vibrator)
+        val hasAmplitude = report.hasAmplitudeControl
+        val predefinedCandidates = report.predefinedEffects
+            .filter { it.support != VibrationCapabilities.Support.NO }
+            .map { it.id }
+        val primitiveCandidates = report.primitives
+            .filter { it.supported }
+            .map { it.id }
+
+        val flavors = mutableListOf(TrulyRandomFlavor.CUSTOM)
+        if (report.predefinedEffectsApiExists && predefinedCandidates.isNotEmpty()) {
+            flavors.add(TrulyRandomFlavor.PREDEFINED)
+        }
+        if (report.compositionApiExists && primitiveCandidates.isNotEmpty()) {
+            flavors.add(TrulyRandomFlavor.COMPOSITION)
+        }
+
+        while (isActive) {
+            // Egy "esemény" 1-3 lüktetésből áll, apró, véletlenszerű résekkel -
+            // ez önmagában is megtöri a Következetlen mód "egy impulzus, egy
+            // szünet" ritmusát.
+            val burstSize = Random.nextInt(1, 4)
+            for (index in 0 until burstSize) {
+                when (flavors.random()) {
+                    TrulyRandomFlavor.CUSTOM -> {
+                        val duration = Random.nextLong(20L, 1500L)
+                        val amplitude = if (hasAmplitude) Random.nextInt(1, 256) else VibrationEffect.DEFAULT_AMPLITUDE
+                        vibrateOneShot(duration, amplitude)
+                        delay(duration)
+                    }
+                    TrulyRandomFlavor.PREDEFINED -> {
+                        val effectId = predefinedCandidates.random()
+                        vibrator.vibrate(VibrationEffect.createPredefined(effectId))
+                        delay(Random.nextLong(60L, 400L))
+                    }
+                    TrulyRandomFlavor.COMPOSITION -> {
+                        val count = Random.nextInt(1, primitiveCandidates.size.coerceAtMost(3) + 1)
+                        val chosen = primitiveCandidates.shuffled().take(count)
+                        val composition = VibrationEffect.startComposition()
+                        chosen.forEachIndexed { i, primitiveId ->
+                            val scale = Random.nextDouble(0.3, 1.0).toFloat()
+                            val primitiveDelay = if (i == 0) 0 else Random.nextInt(0, 80)
+                            composition.addPrimitive(primitiveId, scale, primitiveDelay)
+                        }
+                        vibrator.vibrate(composition.compose())
+                        delay(Random.nextLong(80L, 400L))
+                    }
+                }
+                if (index < burstSize - 1) {
+                    delay(Random.nextLong(10L, 150L))
+                }
+            }
+            // A ciklusok közti szünet lényegesen szélesebb tartományban
+            // véletlenszerű, mint a Következetlen módé, és nincs a
+            // beállított pause-hoz kötve.
+            delay(Random.nextLong(50L, 4000L))
+        }
+    }
+
+    private enum class TrulyRandomFlavor { CUSTOM, PREDEFINED, COMPOSITION }
 
     /**
      * Egyetlen rezgési impulzus lejátszása a beállított típus szerint:
@@ -315,8 +392,9 @@ class VibrationService : Service() {
     private fun modeLabelRes(mode: Int): Int = when (mode) {
         MODE_CONSISTENT -> R.string.mode_consistent_short
         MODE_PULSING -> R.string.mode_pulsing_short
-        MODE_UNPREDICTABLE -> R.string.mode_unpredictable_short
+        MODE_INCONSISTENT -> R.string.mode_inconsistent_short
         MODE_VACUUM -> R.string.mode_vacuum_short
+        MODE_TRULY_RANDOM -> R.string.mode_truly_random_short
         else -> R.string.notification_title
     }
 }

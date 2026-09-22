@@ -71,6 +71,15 @@ támaszkodunk.
 - `VibrationAttributes`: a rezgés "célját" osztályozó attribútum-rendszer
   (pl. értesítés, riasztás, érintési visszajelzés), amivel a rendszer
   eltérően kezelheti (pl. néma módban letilthatja).
+- `Composition.addPrimitive(primitiveId, scale, delay)`: minden primitívhez
+  külön-külön megadható egy 0.0-1.0 közti erősség-szorzó (`scale`) és egy
+  ezredmásodperces késleltetés (`delay`) az előző primitív végétől számítva.
+  A hivatalos tervezési ajánlás szerint 50ms alatti rés két primitív közt
+  alig érzékelhető, 50ms fölött már jól elkülönül; a `scale` értékeknek
+  legalább 1,4-szeres arányban kell eltérniük ahhoz, hogy az erősségkülönbség
+  észrevehető legyen. **A "Kiszámíthatatlan mód" ezt a lehetőséget
+  használja ki**: lüktetésenként véletlenszerű `scale` és `delay` értékekkel
+  állít össze 1-3 primitívből álló kompozíciókat.
 - Forrás: [Haptics API reference](https://developer.android.com/develop/ui/views/haptics/haptics-apis),
   [Custom haptic effects](https://developer.android.com/develop/ui/views/haptics/custom-haptic-effects)
 
@@ -99,6 +108,26 @@ támaszkodunk.
   alapú effektusokhoz) hasznosak, amit ez az alkalmazás nem implementál
   külön szabályozható beállításként, mivel nem ad kézzelfogható,
   felhasználó által állítható paramétert - csak információs adat.
+
+## API 36 (Android 16) - a jelenlegi határ
+
+- `VibrationEffect.BasicEnvelopeBuilder` / `VibrationEffect.WaveformEnvelopeBuilder`:
+  vezérlőpontokból (intenzitás/élesség, vagy amplitúdó/frekvencia Hz-ben +
+  időtartam) felépített, folytonos hullámforma-effektusok. A
+  `WaveformEnvelopeBuilder` a rezgőmotor tényleges frekvencia-tartományát
+  (`VibratorFrequencyProfile`) is figyelembe tudja venni, így pl. a
+  rezonanciafrekvencia felé és onnan visszafelé mozgó, dinamikusan
+  változó "hangmagasságú" rezgés hozható létre.
+- `Vibrator.areEnvelopeEffectsSupported()`: a támogatottság ellenőrzésére.
+- **Ezt a projekt (egyelőre) nem használja.** Két oka van: (1) API 36
+  bevezetése óta eltelt idő rövid, a célközönség (blind Android-felhasználók,
+  gyakran régebbi vagy középkategóriás készülékkel) eszközparkjában még
+  elenyésző az ilyen friss verziójú telefon; (2) a projekt jelenlegi
+  `compileSdk`-ja (34) mellett a fordításhoz is emelni kellene a célzott
+  API-szintet. Ha ez később mégis indokolttá válik (pl. a "Kiszámíthatatlan
+  mód" frekvencia-alapú változatához), ez a szakasz jelzi, hogy a
+  dokumentáció ismerete megvan hozzá.
+- Forrás: [Create custom haptic effects - Vibration waveform with envelopes](https://developer.android.com/develop/ui/views/haptics/custom-haptic-effects#vibration-waveform-with-envelopes)
 
 ## Amit szándékosan nem tettünk beállítássá
 

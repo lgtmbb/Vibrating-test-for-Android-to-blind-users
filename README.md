@@ -6,24 +6,46 @@ kompatibilis.
 
 ## Mit csinál a program
 
-Négy rezgésmintát tud lejátszani, és bármelyik leállítható a Leállítás
+Öt rezgésmintát tud lejátszani, és bármelyik leállítható a Leállítás
 gombbal:
 
-1. **Állandó mód** – folyamatos, gyakorlatilag szünet nélküli rezgés (2
-   másodperces impulzusok 100 ms átfedéssel, hogy ne legyen érzékelhető
-   megszakítás).
-2. **Pulzáló mód** – szabályos ritmusú impulzusok: 400 ms rezgés, 800 ms
-   szünet.
-3. **Kiszámíthatatlan mód** – véletlenszerű hosszúságú (100–1000 ms) rezgések
-   véletlenszerű (200–1500 ms) szünetekkel.
-4. **Vákuum / szívó mód** – fokozatosan erősödő rezgés (5 lépésben 40 ms
-   alatt), amit hirtelen leállás követ, 600 ms szünettel a következő ciklus
-   előtt. Ez a mód a forráskódban megvolt, de a felhasználói felületre nem
-   volt bekötve; most bekötöttem, mivel a kód készen állt rá.
+1. **Állandó mód** – folyamatos, gyakorlatilag szünet nélküli rezgés,
+   beállítható hosszal, mindig kis átfedéssel, hogy ne legyen érzékelhető
+   megszakítás.
+2. **Pulzáló mód** – szabályos ritmusú impulzusok, a Beállításokban
+   megadott hosszal és szünettel.
+3. **Következetlen mód** *(korábban "Kiszámíthatatlan mód" - lásd lent,
+   miért lett átnevezve)* – a Beállításokban megadott hossz és szünet
+   körül, a "Kiszámíthatatlanság mértéke" csúszkával vezérelt mértékben
+   szóró rezgések.
+4. **Vákuum / szívó mód** – fokozatosan erősödő rezgés, amit hirtelen
+   leállás követ. Ez a mód a forráskódban megvolt, de a felhasználói
+   felületre nem volt bekötve; most bekötöttem, mivel a kód készen állt rá.
+5. **Kiszámíthatatlan mód** *(új)* – lásd a következő szakaszt.
 
 Minden gombhoz `contentDescription` tartozik, ezért TalkBack alatt a gomb
 látható felirata helyett a hosszabb, cselekvést leíró szöveg hangzik el (ez a
 viselkedés az eredeti kódban is megvolt, nem az én módosításom vezette be).
+
+## "Következetlen mód" átnevezés és az új "Kiszámíthatatlan mód"
+
+A korábbi 3. gomb ("Kiszámíthatatlan mód") át lett nevezve **"Következetlen
+mód"**-ra (a működése nem változott), mert a kérés szerint kellett egy
+ténylegesen, jóval erősebben véletlenszerű mód is "Kiszámíthatatlan mód"
+néven, és a kettő világos megkülönböztetéshez különböző nevet kapott.
+
+Az új, 5. gombként elérhető **Kiszámíthatatlan mód** minden lehetséges
+paramétert egymástól függetlenül, széles tartományban véletlenszerűsít
+lüktetésenként - nem csak a hosszt és a szünetet, hanem az erősséget és
+magát a rezgés "típusát" is (egyéni hullámforma / előre definiált effektus
+/ összetett primitívek közül véletlenszerűen választva, amelyik éppen
+elérhető a készüléken), és ciklusonként 1-3 lüktetésből álló, véletlenszerű
+belső résekkel tagolt "eseményeket" játszik le. Ezért nem korlátozza a
+Beállítások duration/pause/rezgéstípus értéke - azok csak a Következetlen
+módot vezérlik. A cél kifejezetten az volt, hogy ne alakulhasson ki idővel
+felismerhető ritmus vagy minta. A `VIBRATION_API_RESEARCH.md`-ben
+dokumentáltam a hozzá használt `Composition.addPrimitive(id, scale, delay)`
+API pontos működését és a hivatalos tervezési ajánlásokat is.
 
 ## Amit hozzáadtam: "Folytatás képernyőzár után is" jelölőnégyzet
 
