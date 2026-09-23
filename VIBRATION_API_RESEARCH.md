@@ -149,6 +149,42 @@ támaszkodunk.
 - Forrás: [Create custom haptic effects - Vibration waveform with envelopes](https://developer.android.com/develop/ui/views/haptics/custom-haptic-effects#vibration-waveform-with-envelopes),
   [Implement piecewise linear envelope effects (AOSP)](https://source.android.com/docs/core/interaction/haptics/haptics-pwle)
 
+## Ismétlődés elkerülése - nem Android-specifikus, de idevágó kutatás
+
+A "Kiszámíthatatlan mód" nem csak az Android rezgés-API-jára épül: a
+tényleges élmény javításához a *véletlenszerűség érzékelt minőségét* is meg
+kellett vizsgálni, ami már nem Android-specifikus terület, hanem a
+játékfejlesztésben (elsősorban hangtervezésben) rég megoldott probléma.
+
+- **A jelenség**: matematikailag helyes, egyenletes eloszlású véletlen
+  szám- vagy elemválasztás gyakran "csomósnak" vagy ismétlődőnek *tűnik* az
+  embereknek, még akkor is, ha statisztikailag semmi hiba nincs benne (pl.
+  10 elemből átlagosan minden 10. választás ismétlődés lenne egy valódi
+  egyenletes eloszlásnál - ez embernek "hibásnak" érződik). Ezt kognitív
+  pszichológiai kutatás is megerősíti: emberek megbízhatóan kerülik az
+  egymást követő ismétlődéseket saját (kézzel generált) "véletlen"
+  sorozataikban, még akkor is, ha statisztikailag azoknak elő kellene
+  fordulniuk.
+- **A bevett megoldás - "Repeat Prevention" / "Avoid Repeating Last N"**:
+  játék-hangmotorok (pl. Unity Audio Random Container "Avoid Repeating
+  Last" beállítása, a hangkönyvtárakban elterjedt RNGNeeds "Repeat
+  Prevention" funkciója) egy közös alapelvet követnek: az utolsó N
+  választást kizárják a következő véletlen húzás jelöltjei közül, majd a
+  fennmaradó jelöltek közül húznak egyenletesen. Ezt implementálja a
+  projekt `RepeatAvoidingPicker<T>` segédosztálya - a "Repick" módszer
+  (RNGNeeds terminológiája) egy egyszerűsített, N=1-es változata: ha egy
+  elemet két egymást követő húzás választana ki, a második húzás
+  kizárólag a többi jelölt közül történik.
+- **Alkalmazva**: a Kiszámíthatatlan mód esemény-stratégiájának
+  (BURST/SPARSE/ROLLING/PAIRED), a rezgés-ízének (egyéni/előre definiált/
+  összetett/envelope) és az előre definiált effektus konkrét azonosítójának
+  kiválasztásánál egyaránt.
+- Forrás: [Unity - Audio Random Container reference (Avoid Repeating
+  Last)](https://docs.unity3d.com/2023.2/Documentation/Manual/AudioRandomContainer-UI.html),
+  [RNGNeeds - Repeat Prevention](https://docs.rngneeds.com/documentation/repeat-prevention),
+  [An architecturally constrained model of random number generation - emberi
+  ismétlődés-kerülés kutatása](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4076660/)
+
 ## Amit szándékosan nem tettünk beállítássá
 
 - **Több rezgőmotor egyidejű, külön-külön vezérlése (`CombinedVibration`,

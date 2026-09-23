@@ -61,6 +61,18 @@ mikro-lüktetésekből álló, "recés" sorozat között - ez a hullámforma
 *szerkezetét* teszi véletlenszerűvé, ami erősségszabályzás nélkül is
 másképp érződik.
 
+**Több "random mód" és ismétlődés-elkerülés**: a Kiszámíthatatlan mód négy
+különböző esemény-stratégia (BURST, SPARSE, ROLLING, PAIRED - lásd
+`VIBRATION_API_RESEARCH.md`) között is véletlenszerűen vált, hogy ne csak
+az egyes értékek, hanem a véletlenszerűség *jellege* (ritmusa, sűrűsége) is
+változzon - egy mindig azonos ritmusú lüktetés-sorozat, még ha az értékei
+véletlenszerűek is, idővel felismerhetővé válna. Emellett a stratégia-, íz-
+és effektus-választás nem ismétli meg kétszer egymás után ugyanazt
+(`RepeatAvoidingPicker`) - ez a játék-hangtervezésben bevett "Repeat
+Prevention" technika (Unity Audio Random Container, RNGNeeds könyvtár)
+alkalmazása, mert kutatás szerint a matematikailag helyes, egyenletes
+véletlen is "csomósnak" érződik az embereknek.
+
 ## Amit hozzáadtam: "Folytatás képernyőzár után is" jelölőnégyzet
 
 ### A probléma

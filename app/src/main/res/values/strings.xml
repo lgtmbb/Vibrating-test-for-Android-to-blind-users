@@ -20,7 +20,7 @@
     <string name="desc_pulsing_button">Pulzáló Mód gomb. Ritmikus, szabályos időközönként ismétlődő rezgést indít.</string>
     <string name="desc_inconsistent_button">Következetlen Mód gomb. A Beállításokban megadott hossz és szünet körül, mérsékelt mértékben véletlenszerű rezgéseket indít.</string>
     <string name="desc_vacuum_button">Vákuum Mód gomb. Fokozatosan erősödő, majd hirtelen megszakadó rezgést indít, mintha beszívás történne.</string>
-    <string name="desc_truly_random_button">Kiszámíthatatlan Mód gomb. Minden egyes rezgésnél véletlenszerűen dönt az erősség, a hossz, a hullámforma szerkezete (sima impulzus vagy mikro-lüktetés-sorozat), a rezgés jellege (egyéni / előre definiált effektus / összetett primitívek / Android 16-os envelope-effektus, amelyik éppen elérhető), és a lüktetések száma közt - jóval erősebben, mint a Következetlen mód -, hogy ne alakuljon ki felismerhető minta.</string>
+    <string name="desc_truly_random_button">Kiszámíthatatlan Mód gomb. Négy különböző lüktetés-ritmus (rövid sorozat, hosszú csend utáni meglepetés, folyamatos hullám, kettős kopogás) és rezgésjelleg (egyéni hullámforma, előre definiált effektus, összetett primitívek, Android 16-os envelope-effektus) között véletlenszerűen vált, ismétlődés-elkerüléssel - jóval erősebben, mint a Következetlen mód -, hogy ne alakuljon ki felismerhető minta.</string>
     <string name="desc_stop_button">Leállítás gomb. Az összes folyamatban lévő rezgést azonnal megszakítja.</string>
     <string name="desc_keep_alive_checkbox">Folytatás képernyőzár után. Ha be van jelölve, a rezgés a képernyő lezárása vagy az alkalmazás háttérbe kerülése után is folytatódik, egy értesítés jelzi a futást.</string>
 

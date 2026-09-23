@@ -5,6 +5,32 @@ egy .zip-be csomagolt fájlból állt, teljes build-rendszer nélkül. Ez a
 verzió az első, ami tényleges, lefordítható Android Studio projektként van
 strukturálva.
 
+## [1.5.0]
+
+### Hozzáadva
+- **Négy különböző esemény-stratégia a Kiszámíthatatlan módban**, hogy ne
+  csak az egyes értékek, hanem a véletlenszerűség JELLEGE is változzon:
+  - **BURST**: 1-3 gyors lüktetés apró résekkel, majd közepes szünet
+    (ez volt eddig az egyetlen viselkedés).
+  - **SPARSE**: hosszú (1,5-5s) csend, majd egyetlen, "meglepetésszerű"
+    lüktetés.
+  - **ROLLING**: 4-9 apró lüktetésből álló, majdnem folyamatos "hullám".
+  - **PAIRED**: két lüktetés rövid réssel ("kop-kop"), majd hosszabb
+    szünet.
+- **Ismétlődés elkerülése (`RepeatAvoidingPicker`)**: a stratégia-, íz- és
+  előre definiált effektus-választás mostantól nem választja ki kétszer
+  egymás után ugyanazt. Ez a játék-hangtervezésben bevett, dokumentált
+  "Repeat Prevention" / "Avoid Repeating Last N" technika (Unity Audio
+  Random Container, RNGNeeds könyvtár) alkalmazása - lásd
+  `VIBRATION_API_RESEARCH.md` új szakaszát a hozzá tartozó kutatással
+  (miért érződik a matematikailag helyes, egyenletes véletlen mégis
+  "csomósnak" az embereknek).
+
+### Változott
+- A Kiszámíthatatlan mód belső felépítése átalakítva: a lüktetés-lejátszás
+  logikája kiemelve egy önálló `playOnePulse` függvénybe, amit mind a négy
+  stratégia újrahasznosít.
+
 ## [1.4.0]
 
 ### Javítva

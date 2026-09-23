@@ -284,6 +284,25 @@ class VibrationService : Service() {
     // "recés" sorozat) egy-egy "eseményen" belül is - egymástól
     // függetlenül, széles tartományban véletlenszerűsít minden ciklusban.
     //
+    // Négy különböző ESEMÉNY-STRATÉGIA (lásd RandomStrategy) között is
+    // véletlenszerűen vált, hogy ne csak az egyes értékek, hanem a
+    // véletlenszerűség JELLEGE (ritmusa, sűrűsége) is változzon: BURST
+    // (1-3 gyors lüktetés), SPARSE (hosszú csend, majd egyetlen lüktetés),
+    // ROLLING (sok apró lüktetésből álló, folyamatos "hullám"), PAIRED (két
+    // lüktetés rövid, majd egy hosszabb szünettel). Enélkül, még ha minden
+    // ÉRTÉK véletlenszerű is, a minta "alakja" (mindig azonos ritmusú
+    // lüktetés-sorozatok) idővel felismerhetővé válna.
+    //
+    // ISMÉTLŐDÉS ELKERÜLÉSE: mind a stratégia-, mind az íz-, mind az előre
+    // definiált effektus-választás a RepeatAvoidingPicker segítségével
+    // történik, ami nem választja ki kétszer egymás után ugyanazt. Ez egy
+    // dokumentált, más területeken (játék-hang középrétegek: Unity Audio
+    // Random Container "Avoid Repeating Last" / "No Repeat" módja, RNGNeeds
+    // könyvtár "Repeat Prevention" funkciója) bevett technika, mert a
+    // matematikailag helyes, egyenletes eloszlású véletlen is "csomósnak"
+    // és ismétlődőnek tűnhet az emberi észlelésnek, még akkor is, ha
+    // statisztikailag helyes - lásd VIBRATION_API_RESEARCH.md.
+    //
     // Fontos: az erősségszabályzás (hasAmplitudeControl) sok, főleg
     // olcsóbb, ERM-motoros (nem LRA) készüléken a hardver szintjén
     // egyáltalán nem létezik - ilyenkor a VibrationEffect.DEFAULT_AMPLITUDE
@@ -323,95 +342,143 @@ class VibrationService : Service() {
             flavors.add(TrulyRandomFlavor.ENVELOPE)
         }
 
+        // Az utolsó 1 választást kizárva választ mindegyik picker - ennyi
+        // egy 4 elem körüli listánál (stratégiák, ízek) már érzékelhetően
+        // csökkenti az "egymás utáni ismétlődés" érzetét, anélkül hogy
+        // hosszabb, mesterkéltebb ciklikusságot vinne be.
+        val strategyPicker = RepeatAvoidingPicker(RandomStrategy.entries.toList(), historySize = 1)
+        val flavorPicker = RepeatAvoidingPicker(flavors, historySize = 1)
+        val predefinedPicker = if (predefinedCandidates.isNotEmpty()) {
+            RepeatAvoidingPicker(predefinedCandidates, historySize = 1)
+        } else {
+            null
+        }
+
         while (isActive) {
-            // Egy "esemény" 1-3 lüktetésből áll, apró, véletlenszerű résekkel -
-            // ez önmagában is megtöri a Következetlen mód "egy impulzus, egy
-            // szünet" ritmusát.
-            val burstSize = Random.nextInt(1, 4)
-            for (index in 0 until burstSize) {
-                when (flavors.random()) {
-                    TrulyRandomFlavor.CUSTOM -> {
-                        if (Random.nextBoolean()) {
-                            // Sima, folytonos impulzus.
-                            val duration = Random.nextLong(20L, 1500L)
-                            val amplitude = if (hasAmplitude) Random.nextInt(1, 256) else VibrationEffect.DEFAULT_AMPLITUDE
-                            vibrateOneShot(duration, amplitude)
-                            delay(duration)
-                        } else {
-                            // Mikro-lüktetés-sorozat: a hullámforma SZERKEZETÉT
-                            // teszi véletlenszerűvé (hány rövid be/ki szakaszból
-                            // áll, milyen hosszúak) - ez erősségszabályzás
-                            // NÉLKÜL is más tapintási benyomást kelt, mint egy
-                            // sima impulzus.
-                            val segmentCount = Random.nextInt(2, 7)
-                            val timings = LongArray(segmentCount * 2)
-                            val amplitudes = IntArray(segmentCount * 2)
-                            var total = 0L
-                            for (i in 0 until segmentCount) {
-                                val onMs = Random.nextLong(15L, 120L)
-                                val offMs = Random.nextLong(10L, 100L)
-                                timings[i * 2] = onMs
-                                timings[i * 2 + 1] = offMs
-                                amplitudes[i * 2] = if (hasAmplitude) Random.nextInt(1, 256) else 255
-                                amplitudes[i * 2 + 1] = 0
-                                total += onMs + offMs
-                            }
-                            vibrateWaveform(timings, amplitudes)
-                            delay(total)
+            when (strategyPicker.pick()) {
+                RandomStrategy.BURST -> {
+                    // 1-3 gyors lüktetés, apró résekkel, majd közepes szünet.
+                    val burstSize = Random.nextInt(1, 4)
+                    for (index in 0 until burstSize) {
+                        delay(playOnePulse(flavorPicker, predefinedPicker, primitiveCandidates, hasAmplitude))
+                        if (index < burstSize - 1) {
+                            delay(Random.nextLong(10L, 150L))
                         }
                     }
-                    TrulyRandomFlavor.PREDEFINED -> {
-                        val effectId = predefinedCandidates.random()
-                        vibrator.vibrate(VibrationEffect.createPredefined(effectId))
-                        delay(Random.nextLong(60L, 400L))
-                    }
-                    TrulyRandomFlavor.COMPOSITION -> {
-                        val count = Random.nextInt(1, primitiveCandidates.size.coerceAtMost(3) + 1)
-                        val chosen = primitiveCandidates.shuffled().take(count)
-                        val composition = VibrationEffect.startComposition()
-                        chosen.forEachIndexed { i, primitiveId ->
-                            val scale = Random.nextDouble(0.3, 1.0).toFloat()
-                            val primitiveDelay = if (i == 0) 0 else Random.nextInt(0, 80)
-                            composition.addPrimitive(primitiveId, scale, primitiveDelay)
-                        }
-                        vibrator.vibrate(composition.compose())
-                        delay(Random.nextLong(80L, 400L))
-                    }
-                    TrulyRandomFlavor.ENVELOPE -> {
-                        // Android 16 (API 36): PWLE-alapú, folytonosan változó
-                        // intenzitású/élességű hullámforma - 1-2 köztes,
-                        // véletlenszerű vezérlőpont, majd a kötelező, nullára
-                        // visszatérő záró pont.
-                        val builder = VibrationEffect.BasicEnvelopeBuilder()
-                        var total = 0L
-                        val pointCount = Random.nextInt(1, 3)
-                        repeat(pointCount) {
-                            val intensity = Random.nextDouble(0.15, 1.0).toFloat()
-                            val sharpness = Random.nextDouble(0.0, 1.0).toFloat()
-                            val pointDuration = Random.nextLong(40L, 220L)
-                            builder.addControlPoint(intensity, sharpness, pointDuration)
-                            total += pointDuration
-                        }
-                        val closingSharpness = Random.nextDouble(0.0, 1.0).toFloat()
-                        val closingDuration = Random.nextLong(40L, 150L)
-                        builder.addControlPoint(0f, closingSharpness, closingDuration)
-                        total += closingDuration
-                        vibrator.vibrate(builder.build())
-                        delay(total)
-                    }
+                    delay(Random.nextLong(50L, 1500L))
                 }
-                if (index < burstSize - 1) {
-                    delay(Random.nextLong(10L, 150L))
+                RandomStrategy.SPARSE -> {
+                    // Hosszú csend, majd egyetlen, "meglepetésszerű" lüktetés.
+                    delay(Random.nextLong(1500L, 5000L))
+                    delay(playOnePulse(flavorPicker, predefinedPicker, primitiveCandidates, hasAmplitude))
+                }
+                RandomStrategy.ROLLING -> {
+                    // Sok apró lüktetésből álló, majdnem folyamatos "hullám".
+                    val waveCount = Random.nextInt(4, 10)
+                    repeat(waveCount) {
+                        delay(playOnePulse(flavorPicker, predefinedPicker, primitiveCandidates, hasAmplitude))
+                        delay(Random.nextLong(5L, 40L))
+                    }
+                    delay(Random.nextLong(200L, 2000L))
+                }
+                RandomStrategy.PAIRED -> {
+                    // Két lüktetés rövid réssel ("kop-kop"), majd hosszabb szünet.
+                    delay(playOnePulse(flavorPicker, predefinedPicker, primitiveCandidates, hasAmplitude))
+                    delay(Random.nextLong(60L, 300L))
+                    delay(playOnePulse(flavorPicker, predefinedPicker, primitiveCandidates, hasAmplitude))
+                    delay(Random.nextLong(300L, 3000L))
                 }
             }
-            // A ciklusok közti szünet lényegesen szélesebb tartományban
-            // véletlenszerű, mint a Következetlen módé, és nincs a
-            // beállított pause-hoz kötve.
-            delay(Random.nextLong(50L, 4000L))
         }
     }
 
     private enum class TrulyRandomFlavor { CUSTOM, PREDEFINED, COMPOSITION, ENVELOPE }
+
+    // A Kiszámíthatatlan mód négy különböző "eseményalakja" - lásd a
+    // runTrulyRandom elején lévő magyarázatot.
+    private enum class RandomStrategy { BURST, SPARSE, ROLLING, PAIRED }
+
+    /**
+     * Lejátszik egy lüktetést a flavorPicker által választott íz szerint, és
+     * visszaadja a becsült időtartamát (ennyit kell a hívónak delay()-elnie,
+     * mielőtt a következő lépés jönne).
+     */
+    private fun playOnePulse(
+        flavorPicker: RepeatAvoidingPicker<TrulyRandomFlavor>,
+        predefinedPicker: RepeatAvoidingPicker<Int>?,
+        primitiveCandidates: List<Int>,
+        hasAmplitude: Boolean
+    ): Long {
+        return when (flavorPicker.pick()) {
+            TrulyRandomFlavor.CUSTOM -> {
+                if (Random.nextBoolean()) {
+                    // Sima, folytonos impulzus.
+                    val duration = Random.nextLong(20L, 1500L)
+                    val amplitude = if (hasAmplitude) Random.nextInt(1, 256) else VibrationEffect.DEFAULT_AMPLITUDE
+                    vibrateOneShot(duration, amplitude)
+                    duration
+                } else {
+                    // Mikro-lüktetés-sorozat: a hullámforma SZERKEZETÉT teszi
+                    // véletlenszerűvé (hány rövid be/ki szakaszból áll, milyen
+                    // hosszúak) - ez erősségszabályzás NÉLKÜL is más tapintási
+                    // benyomást kelt, mint egy sima impulzus.
+                    val segmentCount = Random.nextInt(2, 7)
+                    val timings = LongArray(segmentCount * 2)
+                    val amplitudes = IntArray(segmentCount * 2)
+                    var total = 0L
+                    for (i in 0 until segmentCount) {
+                        val onMs = Random.nextLong(15L, 120L)
+                        val offMs = Random.nextLong(10L, 100L)
+                        timings[i * 2] = onMs
+                        timings[i * 2 + 1] = offMs
+                        amplitudes[i * 2] = if (hasAmplitude) Random.nextInt(1, 256) else 255
+                        amplitudes[i * 2 + 1] = 0
+                        total += onMs + offMs
+                    }
+                    vibrateWaveform(timings, amplitudes)
+                    total
+                }
+            }
+            TrulyRandomFlavor.PREDEFINED -> {
+                val effectId = predefinedPicker!!.pick()
+                vibrator.vibrate(VibrationEffect.createPredefined(effectId))
+                Random.nextLong(60L, 400L)
+            }
+            TrulyRandomFlavor.COMPOSITION -> {
+                val count = Random.nextInt(1, primitiveCandidates.size.coerceAtMost(3) + 1)
+                val chosen = primitiveCandidates.shuffled().take(count)
+                val composition = VibrationEffect.startComposition()
+                chosen.forEachIndexed { i, primitiveId ->
+                    val scale = Random.nextDouble(0.3, 1.0).toFloat()
+                    val primitiveDelay = if (i == 0) 0 else Random.nextInt(0, 80)
+                    composition.addPrimitive(primitiveId, scale, primitiveDelay)
+                }
+                vibrator.vibrate(composition.compose())
+                Random.nextLong(80L, 400L)
+            }
+            TrulyRandomFlavor.ENVELOPE -> {
+                // Android 16 (API 36): PWLE-alapú, folytonosan változó
+                // intenzitású/élességű hullámforma - 1-2 köztes, véletlenszerű
+                // vezérlőpont, majd a kötelező, nullára visszatérő záró pont.
+                val builder = VibrationEffect.BasicEnvelopeBuilder()
+                var total = 0L
+                val pointCount = Random.nextInt(1, 3)
+                repeat(pointCount) {
+                    val intensity = Random.nextDouble(0.15, 1.0).toFloat()
+                    val sharpness = Random.nextDouble(0.0, 1.0).toFloat()
+                    val pointDuration = Random.nextLong(40L, 220L)
+                    builder.addControlPoint(intensity, sharpness, pointDuration)
+                    total += pointDuration
+                }
+                val closingSharpness = Random.nextDouble(0.0, 1.0).toFloat()
+                val closingDuration = Random.nextLong(40L, 150L)
+                builder.addControlPoint(0f, closingSharpness, closingDuration)
+                total += closingDuration
+                vibrator.vibrate(builder.build())
+                total
+            }
+        }
+    }
 
     private fun vibrateWaveform(timings: LongArray, amplitudes: IntArray) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -470,3 +537,41 @@ class VibrationService : Service() {
         else -> R.string.notification_title
     }
 }
+
+/**
+ * Véletlenszerű választó, ami elkerüli az utolsó [historySize] választás
+ * megismétlését - ez az "Avoid Repeating Last N" / "Repeat Prevention"
+ * technika, amit pl. a Unity motor Audio Random Container-e ("Avoid
+ * Repeating Last" beállítás) és a játék-hangokhoz készült RNGNeeds könyvtár
+ * "Repeat Prevention" funkciója is használ (lásd VIBRATION_API_RESEARCH.md).
+ * Az indoklás dokumentált jelenség: a matematikailag helyes, egyenletes
+ * eloszlású véletlen az embereknek gyakran "csomósnak", ismétlődőnek tűnik,
+ * miközben egy enyhén korlátozott - de nem ciklikus - változat inkább
+ * megfelel annak, amit valaki "igazán véletlenszerűnek" érez.
+ *
+ * Ha a jelöltlista mérete nem elég nagy ahhoz, hogy [historySize] elemet ki
+ * lehessen zárni és még maradjon választható elem, a korlátozás automatikusan
+ * gyengül (lásd effectiveHistorySize) - egyetlen jelölt esetén nincs
+ * elkerülés, hiszen nem is lenne mit választani helyette.
+ */
+private class RepeatAvoidingPicker<T>(private val candidates: List<T>, historySize: Int) {
+    private val effectiveHistorySize = historySize.coerceIn(0, (candidates.size - 1).coerceAtLeast(0))
+    private val history = ArrayDeque<T>()
+
+    fun pick(): T {
+        val pool = if (effectiveHistorySize > 0) {
+            candidates.filterNot { it in history }
+        } else {
+            candidates
+        }
+        val chosen = (if (pool.isNotEmpty()) pool else candidates).random()
+        if (effectiveHistorySize > 0) {
+            history.addLast(chosen)
+            while (history.size > effectiveHistorySize) {
+                history.removeFirst()
+            }
+        }
+        return chosen
+    }
+}
+
