@@ -6,7 +6,7 @@ kompatibilis.
 
 ## Mit csinál a program
 
-Öt rezgésmintát tud lejátszani, és bármelyik leállítható a Leállítás
+Hat rezgésmintát tud lejátszani, és bármelyik leállítható a Leállítás
 gombbal:
 
 1. **Állandó mód** – folyamatos, gyakorlatilag szünet nélküli rezgés,
@@ -22,6 +22,7 @@ gombbal:
    leállás követ. Ez a mód a forráskódban megvolt, de a felhasználói
    felületre nem volt bekötve; most bekötöttem, mivel a kód készen állt rá.
 5. **Kiszámíthatatlan mód** *(új)* – lásd a következő szakaszt.
+6. **Kalapács mód** *(új)* – lásd a "Kalapács mód" szakaszt lent.
 
 Minden gombhoz `contentDescription` tartozik, ezért TalkBack alatt a gomb
 látható felirata helyett a hosszabb, cselekvést leíró szöveg hangzik el (ez a
@@ -72,6 +73,24 @@ véletlenszerűek is, idővel felismerhetővé válna. Emellett a stratégia-, �
 Prevention" technika (Unity Audio Random Container, RNGNeeds könyvtár)
 alkalmazása, mert kutatás szerint a matematikailag helyes, egyenletes
 véletlen is "csomósnak" érződik az embereknek.
+
+## Kalapács mód
+
+A hatodik, új gomb a lehető legerősebb rezgést indítja, folyamatosan, de
+nagyon apró (25-60ms) szünetekkel megszakítva - mintha valaki ismételten
+lesújtana egy kalapáccsal. Fontos különbség a Kiszámíthatatlan módhoz
+képest: itt szándékosan **nem** véletlenszerű az erősség - az mindig a
+lehető legnagyobb -, csak az ütések apró időzítése kap enyhe, emberi
+jellegű ingadozást, hogy ne érződjön robotikusan egyenletesnek.
+
+Amikor a készülék jelzi a támogatását, a mód az `EFFECT_HEAVY_CLICK` előre
+definiált effektust használja - ezt kifejezetten erős, hirtelen "ütés"
+érzetre tervezték, és gyakran a gyártó hangolja az adott hardverre, ezért
+hitelesebb "csattanást" ad, mint egy generikus impulzus. Ha nem elérhető,
+egy 255-ös (maximális) erősségű, rövid impulzusra esik vissza - ez
+biztonságosan kérhető erősségszabályzás nélküli hardveren is, mert a
+hivatalos dokumentáció szerint minden nem nulla erősségérték automatikusan
+100%-ra kerekítődik ilyen eszközön (lásd `VIBRATION_API_RESEARCH.md`).
 
 ## Amit hozzáadtam: "Folytatás képernyőzár után is" jelölőnégyzet
 

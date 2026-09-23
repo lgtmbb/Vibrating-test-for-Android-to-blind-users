@@ -34,6 +34,7 @@ class MainActivity : AppCompatActivity() {
         val btnInconsistent = findViewById<Button>(R.id.btnInconsistent)
         val btnVacuum = findViewById<Button>(R.id.btnVacuum)
         val btnTrulyRandom = findViewById<Button>(R.id.btnTrulyRandom)
+        val btnHammer = findViewById<Button>(R.id.btnHammer)
         val btnStop = findViewById<Button>(R.id.btnStop)
         val btnSettings = findViewById<Button>(R.id.btnSettings)
         chkKeepAlive = findViewById(R.id.chkKeepAlive)
@@ -63,6 +64,9 @@ class MainActivity : AppCompatActivity() {
         }
         btnTrulyRandom.setOnClickListener {
             onModeButtonPressed(VibrationService.MODE_TRULY_RANDOM, R.string.announce_truly_random)
+        }
+        btnHammer.setOnClickListener {
+            onModeButtonPressed(VibrationService.MODE_HAMMER, R.string.announce_hammer)
         }
         btnStop.setOnClickListener {
             stopMode()

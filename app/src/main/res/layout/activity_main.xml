@@ -81,7 +81,7 @@
             android:layout_marginBottom="16dp"
             android:contentDescription="@string/desc_vacuum_button" />
 
-        <!-- 5. Truly Unpredictable Mode (new) -->
+        <!-- 5. Truly Unpredictable Mode -->
         <Button
             android:id="@+id/btnTrulyRandom"
             android:layout_width="match_parent"
@@ -90,8 +90,20 @@
             android:textSize="18sp"
             android:backgroundTint="#333333"
             android:textColor="#FFFFFF"
-            android:layout_marginBottom="32dp"
+            android:layout_marginBottom="16dp"
             android:contentDescription="@string/desc_truly_random_button" />
+
+        <!-- 6. Hammer Mode (new) -->
+        <Button
+            android:id="@+id/btnHammer"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:text="@string/mode_hammer_button"
+            android:textSize="18sp"
+            android:backgroundTint="#333333"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="32dp"
+            android:contentDescription="@string/desc_hammer_button" />
 
         <!-- Stop Button -->
         <Button

@@ -34,7 +34,16 @@ támaszkodunk.
 - `Vibrator.hasAmplitudeControl()`: **ez az első API, amivel lekérdezhető,
   hogy a hardver ténylegesen támogatja-e az erősségszabályzást.** Ha nem,
   minden nem-nulla erősségérték egyszerűen "be"-ként viselkedik.
-- Forrás: [VibrationEffect referencia](https://developer.android.com/reference/kotlin/android/os/VibrationEffect)
+- **Fontos, pontosan dokumentált részlet**: a hivatalos Android haptika
+  API-referencia szerint "Non-zero amplitude values are rounded up to 100%
+  on devices without amplitude control" - tehát bármilyen 1-255 közti
+  erősségérték kérése **biztonságos olyan hardveren is, ami nem támogatja
+  az erősségszabályzást**: nem dob kivételt, egyszerűen 100%-ra
+  kerekítődik. Emiatt a "Kalapács mód" (lásd lent) nyugodtan kérhet mindig
+  255-öt, `hasAmplitudeControl()` előzetes ellenőrzése nélkül - ott
+  szándékosan ez a viselkedés (mindig maximális erősség).
+- Forrás: [VibrationEffect referencia](https://developer.android.com/reference/kotlin/android/os/VibrationEffect),
+  [Android haptics API reference](https://developer.android.com/develop/ui/views/haptics/haptics-apis)
 
 ## API 29 (Android 10)
 

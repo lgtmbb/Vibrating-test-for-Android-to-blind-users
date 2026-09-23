@@ -56,6 +56,7 @@ class VibrationService : Service() {
         const val MODE_INCONSISTENT = 2
         const val MODE_VACUUM = 3
         const val MODE_TRULY_RANDOM = 4
+        const val MODE_HAMMER = 5
 
         private const val CHANNEL_ID = "vibration_service_channel"
         private const val NOTIFICATION_ID = 1
@@ -210,6 +211,7 @@ class VibrationService : Service() {
                 MODE_INCONSISTENT -> runInconsistent()
                 MODE_VACUUM -> runVacuum()
                 MODE_TRULY_RANDOM -> runTrulyRandom()
+                MODE_HAMMER -> runHammer()
             }
         }
     }
@@ -394,6 +396,50 @@ class VibrationService : Service() {
 
     private enum class TrulyRandomFlavor { CUSTOM, PREDEFINED, COMPOSITION, ENVELOPE }
 
+    // 6. Kalapács mód ("Hammer Mode"): a lehető legerősebb rezgés,
+    // folyamatosan, de nagyon apró szünetekkel megszakítva - mint amikor
+    // valaki ismételten lesújt egy kalapáccsal. Szándékosan NEM
+    // véletlenszerűsíti az erősséget (ellentétben a Kiszámíthatatlan
+    // móddal, aminek pont az volt a lényege) - itt az erősség mindig a
+    // lehető legnagyobb, csak az "ütések" apró időzítése kap enyhe,
+    // emberi jellegű ingadozást, hogy ne érződjön robotikusan
+    // egyenletesnek.
+    //
+    // Amikor elérhető és a készülék jelzi a támogatását, az
+    // EFFECT_HEAVY_CLICK előre definiált effektust használja: ezt kifejezetten
+    // erős, hirtelen "ütés" érzetre tervezték, és gyakran a gyártó hangolja
+    // az adott hardverre - hitelesebb "csattanást" ad, mint egy generikus,
+    // egyenletes erősségű impulzus. Ha nem támogatott, egy maximális
+    // erősségű, rövid impulzusra esik vissza.
+    //
+    // A 255-ös (legnagyobb) erősség biztonságosan kérhető erősségszabályzás
+    // NÉLKÜLI hardveren is: a hivatalos Android dokumentáció szerint minden
+    // nem nulla erősségérték automatikusan 100%-ra kerekítődik olyan
+    // eszközön, ami nem támogatja a finomabb szabályozást - tehát itt,
+    // ellentétben a többi móddal, nem kell előtte hasAmplitudeControl()-t
+    // ellenőrizni (lásd VIBRATION_API_RESEARCH.md).
+    private suspend fun CoroutineScope.runHammer() {
+        val report = VibrationCapabilities.buildReport(vibrator)
+        val useHeavyClick = report.predefinedEffectsApiExists &&
+            report.predefinedEffects.any {
+                it.id == VibrationEffect.EFFECT_HEAVY_CLICK && it.support != VibrationCapabilities.Support.NO
+            }
+
+        while (isActive) {
+            if (useHeavyClick) {
+                vibrator.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_HEAVY_CLICK))
+                delay(Random.nextLong(70L, 100L))
+            } else {
+                val duration = Random.nextLong(120L, 180L)
+                vibrateOneShot(duration, 255)
+                delay(duration)
+            }
+            // Nagyon apró szünet a következő "ütés" előtt - ez adja a
+            // "megszakított folyamatosság", kalapácsütés-szerű érzetet.
+            delay(Random.nextLong(25L, 60L))
+        }
+    }
+
     // A Kiszámíthatatlan mód négy különböző "eseményalakja" - lásd a
     // runTrulyRandom elején lévő magyarázatot.
     private enum class RandomStrategy { BURST, SPARSE, ROLLING, PAIRED }
@@ -534,6 +580,7 @@ class VibrationService : Service() {
         MODE_INCONSISTENT -> R.string.mode_inconsistent_short
         MODE_VACUUM -> R.string.mode_vacuum_short
         MODE_TRULY_RANDOM -> R.string.mode_truly_random_short
+        MODE_HAMMER -> R.string.mode_hammer_short
         else -> R.string.notification_title
     }
 }

@@ -8,6 +8,7 @@
     <string name="mode_inconsistent_button">3. Következetlen Mód (Inconsistent)</string>
     <string name="mode_vacuum_button">4. Szívó / Vákuum Mód (Vacuum)</string>
     <string name="mode_truly_random_button">5. Kiszámíthatatlan Mód (Truly Unpredictable)</string>
+    <string name="mode_hammer_button">6. Kalapács Mód (Hammer)</string>
     <string name="stop_button">Leállítás</string>
 
     <string name="mode_consistent_short">Állandó mód</string>
@@ -15,12 +16,14 @@
     <string name="mode_inconsistent_short">Következetlen mód</string>
     <string name="mode_vacuum_short">Vákuum mód</string>
     <string name="mode_truly_random_short">Kiszámíthatatlan mód</string>
+    <string name="mode_hammer_short">Kalapács mód</string>
 
     <string name="desc_consistent_button">Állandó Mód gomb. Folyamatos, szünet nélküli rezgést indít.</string>
     <string name="desc_pulsing_button">Pulzáló Mód gomb. Ritmikus, szabályos időközönként ismétlődő rezgést indít.</string>
     <string name="desc_inconsistent_button">Következetlen Mód gomb. A Beállításokban megadott hossz és szünet körül, mérsékelt mértékben véletlenszerű rezgéseket indít.</string>
     <string name="desc_vacuum_button">Vákuum Mód gomb. Fokozatosan erősödő, majd hirtelen megszakadó rezgést indít, mintha beszívás történne.</string>
     <string name="desc_truly_random_button">Kiszámíthatatlan Mód gomb. Négy különböző lüktetés-ritmus (rövid sorozat, hosszú csend utáni meglepetés, folyamatos hullám, kettős kopogás) és rezgésjelleg (egyéni hullámforma, előre definiált effektus, összetett primitívek, Android 16-os envelope-effektus) között véletlenszerűen vált, ismétlődés-elkerüléssel - jóval erősebben, mint a Következetlen mód -, hogy ne alakuljon ki felismerhető minta.</string>
+    <string name="desc_hammer_button">Kalapács Mód gomb. A lehető legerősebb rezgést indítja, folyamatosan, de nagyon apró szünetekkel megszakítva - mint amikor valaki ismételten lesújt egy kalapáccsal. Az erősség mindig maximális, csak az ütések apró időzítése ingadozik enyhén.</string>
     <string name="desc_stop_button">Leállítás gomb. Az összes folyamatban lévő rezgést azonnal megszakítja.</string>
     <string name="desc_keep_alive_checkbox">Folytatás képernyőzár után. Ha be van jelölve, a rezgés a képernyő lezárása vagy az alkalmazás háttérbe kerülése után is folytatódik, egy értesítés jelzi a futást.</string>
 
@@ -31,6 +34,7 @@
     <string name="announce_inconsistent">Következetlen rezgés mód elindítva</string>
     <string name="announce_vacuum">Vákuum rezgés mód elindítva</string>
     <string name="announce_truly_random">Kiszámíthatatlan rezgés mód elindítva</string>
+    <string name="announce_hammer">Kalapács rezgés mód elindítva</string>
     <string name="announce_stop">Rezgések leállítva</string>
     <string name="announce_keep_alive_on">Képernyőzár utáni folytatás bekapcsolva</string>
     <string name="announce_keep_alive_off">Képernyőzár utáni folytatás kikapcsolva</string>
@@ -39,7 +43,7 @@
     <string name="notification_title">Rezgés Tesztelő aktív</string>
 
     <!-- Settings button on the main screen -->
-    <string name="settings_button">6. Beállítások</string>
+    <string name="settings_button">7. Beállítások</string>
     <string name="desc_settings_button">Beállítások gomb. Megnyitja a rezgés erősségét, hosszát, szünetét és egyéb részleteit szabályozó képernyőt.</string>
     <string name="announce_already_running">Már fut ez a mód, a gomb nem indította újra</string>
 

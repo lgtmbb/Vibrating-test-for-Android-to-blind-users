@@ -5,6 +5,28 @@ egy .zip-be csomagolt fájlból állt, teljes build-rendszer nélkül. Ez a
 verzió az első, ami tényleges, lefordítható Android Studio projektként van
 strukturálva.
 
+## [1.6.0]
+
+### Hozzáadva
+- **Új, 6. mód: "Kalapács mód"** - a lehető legerősebb rezgés, folyamatosan,
+  de nagyon apró (25-60ms) szünetekkel megszakítva, mint amikor valaki
+  ismételten lesújt egy kalapáccsal. Amikor a készülék támogatja, az
+  `EFFECT_HEAVY_CLICK` előre definiált effektust használja (ezt kifejezetten
+  erős, hirtelen "ütés" érzetre tervezték, gyakran gyártó által hangolva);
+  ha nem elérhető, egy 255-ös (maximális) erősségű, rövid impulzusra esik
+  vissza. Ellentétben a Kiszámíthatatlan móddal, itt az erősség szándékosan
+  NEM véletlenszerű - mindig maximális -, csak az ütések apró időzítése
+  kap enyhe, emberi jellegű ingadozást.
+- `VIBRATION_API_RESEARCH.md` kiegészítve egy pontosan dokumentált
+  részlettel: nem nulla erősségérték biztonságosan kérhető
+  erősségszabályzás nélküli hardveren is (100%-ra kerekítődik, nem dob
+  kivételt) - ez teszi lehetővé, hogy a Kalapács mód mindig 255-öt
+  kérjen, előzetes `hasAmplitudeControl()` ellenőrzés nélkül.
+
+### Változott
+- A gombok újraszámozva: ...5. Kiszámíthatatlan, 6. Kalapács, majd
+  Leállítás, majd 7. Beállítások.
+
 ## [1.5.0]
 
 ### Hozzáadva
