@@ -5,6 +5,39 @@ egy .zip-be csomagolt fájlból állt, teljes build-rendszer nélkül. Ez a
 verzió az első, ami tényleges, lefordítható Android Studio projektként van
 strukturálva.
 
+## [1.7.0]
+
+### Hozzáadva
+- **Négy új, determinisztikus (nem véletlenszerű) mód**, amelyek - a
+  Kiszámíthatatlan és a Kalapács móddal ellentétben - minden ismétlésnél
+  pontosan ugyanazt a mintázatot adják:
+  - **7. Rövid-hosszú váltakozás**: rövid rezgés, majd hosszú rezgés fix
+    ismétlődő mintázatban (a "Rezgés hossza" és "Szünet hossza"
+    beállítást használja).
+  - **8. Fokozatos erősödés**: alacsony erősségről indulva folyamatosan
+    erősödik a maximumig a "Rezgés hossza" alatt, majd újrakezdi.
+  - **9. Fokozatos gyengülés**: a Beállításokban megadott erősségről (vagy
+    ha nincs egyéni erősség beállítva, maximumról) indulva fokozatosan
+    csökken majdnem nulláig, majd újrakezdi.
+  - **10. Hullámzó intenzitás**: az erősség folyamatosan, simán hullámzik
+    fel-le szinusz-görbe szerint, fix ciklushosszal (a "Rezgés hossza"
+    egy teljes ciklus).
+  - Mind a négy a natív `VibrationEffect.createWaveform(..., repeat=0)`
+    mechanizmust használja saját `delay()`-ciklus helyett, hogy az
+    ismétlődés időzítése garantáltan azonos maradjon minden körben - lásd
+    `VIBRATION_API_RESEARCH.md` új szakaszát.
+  - Erősségszabályzás nélküli hardveren mindhárom rámpa/hullám mód az
+    on/off arányt (duty cycle-t) modulálja amplitúdó helyett - ugyanaz a
+    technika, amit a Kiszámíthatatlan mód mikro-lüktetés-sorozata is
+    használ.
+
+### Változott
+- A gombok újraszámozva: ...6. Kalapács, 7. Rövid-hosszú váltakozás, 8.
+  Fokozatos erősödés, 9. Fokozatos gyengülés, 10. Hullámzó intenzitás,
+  majd Leállítás, majd 11. Beállítások.
+- A "Rezgés hossza" és "Szünet hossza" beállítások leírása frissítve,
+  jelezve, hogy az új módok is felhasználják őket.
+
 ## [1.6.0]
 
 ### Hozzáadva

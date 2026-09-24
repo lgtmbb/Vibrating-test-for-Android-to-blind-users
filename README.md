@@ -6,7 +6,7 @@ kompatibilis.
 
 ## Mit csinál a program
 
-Hat rezgésmintát tud lejátszani, és bármelyik leállítható a Leállítás
+Tíz rezgésmintát tud lejátszani, és bármelyik leállítható a Leállítás
 gombbal:
 
 1. **Állandó mód** – folyamatos, gyakorlatilag szünet nélküli rezgés,
@@ -23,6 +23,14 @@ gombbal:
    felületre nem volt bekötve; most bekötöttem, mivel a kód készen állt rá.
 5. **Kiszámíthatatlan mód** *(új)* – lásd a következő szakaszt.
 6. **Kalapács mód** *(új)* – lásd a "Kalapács mód" szakaszt lent.
+7. **Rövid-hosszú váltakozás** *(új)* – rövid, majd hosszú rezgés fix,
+   minden ismétlésnél azonos időzítésű mintázatban.
+8. **Fokozatos erősödés** *(új)* – alacsonyról indulva folyamatosan
+   erősödik a maximumig, majd újrakezdi.
+9. **Fokozatos gyengülés** *(új)* – a beállított erősségről indulva
+   fokozatosan gyengül majdnem nulláig, majd újrakezdi.
+10. **Hullámzó intenzitás** *(új)* – az erősség folyamatosan hullámzik
+    fel-le, szinusz-görbe szerint.
 
 Minden gombhoz `contentDescription` tartozik, ezért TalkBack alatt a gomb
 látható felirata helyett a hosszabb, cselekvést leíró szöveg hangzik el (ez a
@@ -91,6 +99,31 @@ egy 255-ös (maximális) erősségű, rövid impulzusra esik vissza - ez
 biztonságosan kérhető erősségszabályzás nélküli hardveren is, mert a
 hivatalos dokumentáció szerint minden nem nulla erősségérték automatikusan
 100%-ra kerekítődik ilyen eszközön (lásd `VIBRATION_API_RESEARCH.md`).
+
+## Négy determinisztikus mód: Rövid-hosszú váltakozás, Fokozatos erősödés/gyengülés, Hullámzó intenzitás
+
+Ez a négy mód - a Kiszámíthatatlan és a Kalapács móddal szemben -
+szándékosan **nem** véletlenszerű: a mintázatnak minden ismétlésnél
+pontosan ugyanazzal az időzítéssel kell futnia. Ehhez nem saját
+`delay()`-alapú Kotlin-ciklust használnak, hanem a natív
+`VibrationEffect.createWaveform(timings, amplitudes, repeat=0)`
+mechanizmust - egyetlen hívással a rendszer maga ismétli a hullámformát a
+végtelenségig, ami garantáltan azonos időzítést ad, mert nem a mi
+coroutine-unk (apró ütemezési ingadozásoknak kitéve), hanem a platform
+saját, natív rezgésütemezője hajtja végre.
+
+Mindegyik a meglévő "Rezgés hossza" és/vagy "Szünet hossza" beállítást
+használja fel új beállítás bevezetése nélkül: a Rövid-hosszú váltakozás a
+hosszhoz és a szünethez, a rámpák és a hullám a "Rezgés hossza" értéket a
+rámpa/ciklus teljes időtartamaként.
+
+A Fokozatos erősödés/gyengülés és a Hullámzó intenzitás nem az Android
+16-os envelope API-t használja (ellentétben a Kiszámíthatatlan móddal),
+hanem sok apró (30ms-es) lépésből épít egy lépcsőzetes közelítést a
+folytonos görbéhez - ez API 26-tól (Android 8.0) mindenhol működik, nem
+csak a legújabb készülékeken. Erősségszabályzás nélküli hardveren mindhárom
+az on/off arányt (duty cycle-t) modulálja amplitúdó helyett, ugyanazzal a
+technikával, amit a Kiszámíthatatlan mód mikro-lüktetés-sorozata is használ.
 
 ## Amit hozzáadtam: "Folytatás képernyőzár után is" jelölőnégyzet
 

@@ -158,6 +158,42 @@ támaszkodunk.
 - Forrás: [Create custom haptic effects - Vibration waveform with envelopes](https://developer.android.com/develop/ui/views/haptics/custom-haptic-effects#vibration-waveform-with-envelopes),
   [Implement piecewise linear envelope effects (AOSP)](https://source.android.com/docs/core/interaction/haptics/haptics-pwle)
 
+## Natív, ismétlődő hullámforma - determinisztikus mintázatokhoz
+
+A "Rövid-hosszú váltakozás", "Fokozatos erősödés", "Fokozatos gyengülés" és
+"Hullámzó intenzitás" módok mindegyike **szándékosan nem véletlenszerű** -
+a mintázatnak minden ismétlésnél pontosan ugyanazzal az időzítéssel kell
+futnia. Ehhez nem saját, `delay()`-alapú Kotlin-ciklust használnak, hanem a
+`VibrationEffect.createWaveform(long[] timings, int[] amplitudes, int
+repeat)` API `repeat` paraméterét: ha ez nem -1 (hanem egy érvényes index,
+jelen esetben 0), a rendszer a hullámformát a megadott indextől kezdve
+**saját maga, natívan ismétli a végtelenségig**, amíg
+`Vibrator.cancel()` le nem állítja. Ez két okból jobb egy saját ciklusnál:
+
+1. **Garantáltan azonos időzítés minden körben** - nem a mi
+   coroutine-unk (ami ki van téve a JVM/Kotlin ütemező apró, valós idejű
+   ingadozásainak) hajtja végre az ismétlést, hanem a platform saját,
+   natív rezgésütemezője.
+2. **Egyetlen `vibrate()` hívás elég** az egész, akár órákig tartó
+   ismétlődő lejátszáshoz - nincs szükség folyamatosan újraébredő
+   coroutine-ra.
+
+Forrás: [VibrationEffect.createWaveform referencia](https://developer.android.com/reference/kotlin/android/os/VibrationEffect#createWaveform(long%5B%5D,%20int%5B%5D,%20int)) -
+"repeat: The index into the timings array at which to start repeating, or
+-1 if you don't want to repeat."
+
+### Sima rámpa/hullám közelítése lépcsőzéssel
+
+A "Fokozatos erősödés/gyengülés" és a "Hullámzó intenzitás" mód nem az
+Android 16-os envelope API-t (`BasicEnvelopeBuilder`) használja, hanem sok,
+apró (30ms-es) lépésből álló hullámformát épít, amelyben minden lépés
+amplitúdója egy kicsit más - ez lépcsőzetesen közelíti a folytonos
+görbét, elég finom felbontással ahhoz, hogy simának érződjön. Ennek oka,
+hogy ez az API 26-tól (Android 8.0) mindenhol elérhető, szemben az
+envelope API-val, ami csak Android 16-tól létezik - így ezek a módok
+minden, erősségszabályzással rendelkező készüléken működnek, nem csak a
+legújabbakon.
+
 ## Ismétlődés elkerülése - nem Android-specifikus, de idevágó kutatás
 
 A "Kiszámíthatatlan mód" nem csak az Android rezgés-API-jára épül: a

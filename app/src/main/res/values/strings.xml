@@ -9,6 +9,10 @@
     <string name="mode_vacuum_button">4. Szívó / Vákuum Mód (Vacuum)</string>
     <string name="mode_truly_random_button">5. Kiszámíthatatlan Mód (Truly Unpredictable)</string>
     <string name="mode_hammer_button">6. Kalapács Mód (Hammer)</string>
+    <string name="mode_short_long_button">7. Rövid–Hosszú Váltakozás (Short-Long)</string>
+    <string name="mode_ramp_up_button">8. Fokozatos Erősödés (Ramp Up)</string>
+    <string name="mode_ramp_down_button">9. Fokozatos Gyengülés (Ramp Down)</string>
+    <string name="mode_wave_button">10. Hullámzó Intenzitás (Wave)</string>
     <string name="stop_button">Leállítás</string>
 
     <string name="mode_consistent_short">Állandó mód</string>
@@ -17,6 +21,10 @@
     <string name="mode_vacuum_short">Vákuum mód</string>
     <string name="mode_truly_random_short">Kiszámíthatatlan mód</string>
     <string name="mode_hammer_short">Kalapács mód</string>
+    <string name="mode_short_long_short">Rövid-hosszú váltakozás</string>
+    <string name="mode_ramp_up_short">Fokozatos erősödés</string>
+    <string name="mode_ramp_down_short">Fokozatos gyengülés</string>
+    <string name="mode_wave_short">Hullámzó intenzitás</string>
 
     <string name="desc_consistent_button">Állandó Mód gomb. Folyamatos, szünet nélküli rezgést indít.</string>
     <string name="desc_pulsing_button">Pulzáló Mód gomb. Ritmikus, szabályos időközönként ismétlődő rezgést indít.</string>
@@ -24,6 +32,10 @@
     <string name="desc_vacuum_button">Vákuum Mód gomb. Fokozatosan erősödő, majd hirtelen megszakadó rezgést indít, mintha beszívás történne.</string>
     <string name="desc_truly_random_button">Kiszámíthatatlan Mód gomb. Négy különböző lüktetés-ritmus (rövid sorozat, hosszú csend utáni meglepetés, folyamatos hullám, kettős kopogás) és rezgésjelleg (egyéni hullámforma, előre definiált effektus, összetett primitívek, Android 16-os envelope-effektus) között véletlenszerűen vált, ismétlődés-elkerüléssel - jóval erősebben, mint a Következetlen mód -, hogy ne alakuljon ki felismerhető minta.</string>
     <string name="desc_hammer_button">Kalapács Mód gomb. A lehető legerősebb rezgést indítja, folyamatosan, de nagyon apró szünetekkel megszakítva - mint amikor valaki ismételten lesújt egy kalapáccsal. Az erősség mindig maximális, csak az ütések apró időzítése ingadozik enyhén.</string>
+    <string name="desc_short_long_button">Rövid-Hosszú Váltakozás gomb. Egy rövid, majd egy hosszú rezgést ismétel, minden körben pontosan ugyanazzal az időzítéssel - a Beállításokban megadott hossz és szünet alapján.</string>
+    <string name="desc_ramp_up_button">Fokozatos Erősödés gomb. Alacsony erősségről indulva folyamatosan és fokozatosan erősödik a maximumig a Beállításokban megadott hossz alatt, majd újrakezdi.</string>
+    <string name="desc_ramp_down_button">Fokozatos Gyengülés gomb. A Beállításokban megadott erősségről indulva fokozatosan gyengül majdnem nulláig a megadott hossz alatt, majd újrakezdi.</string>
+    <string name="desc_wave_button">Hullámzó Intenzitás gomb. Az erősség folyamatosan, simán hullámzik fel-le, fix ciklushosszal, amit a Beállításokban megadott hossz határoz meg.</string>
     <string name="desc_stop_button">Leállítás gomb. Az összes folyamatban lévő rezgést azonnal megszakítja.</string>
     <string name="desc_keep_alive_checkbox">Folytatás képernyőzár után. Ha be van jelölve, a rezgés a képernyő lezárása vagy az alkalmazás háttérbe kerülése után is folytatódik, egy értesítés jelzi a futást.</string>
 
@@ -35,6 +47,10 @@
     <string name="announce_vacuum">Vákuum rezgés mód elindítva</string>
     <string name="announce_truly_random">Kiszámíthatatlan rezgés mód elindítva</string>
     <string name="announce_hammer">Kalapács rezgés mód elindítva</string>
+    <string name="announce_short_long">Rövid-hosszú váltakozás mód elindítva</string>
+    <string name="announce_ramp_up">Fokozatos erősödés mód elindítva</string>
+    <string name="announce_ramp_down">Fokozatos gyengülés mód elindítva</string>
+    <string name="announce_wave">Hullámzó intenzitás mód elindítva</string>
     <string name="announce_stop">Rezgések leállítva</string>
     <string name="announce_keep_alive_on">Képernyőzár utáni folytatás bekapcsolva</string>
     <string name="announce_keep_alive_off">Képernyőzár utáni folytatás kikapcsolva</string>
@@ -43,7 +59,7 @@
     <string name="notification_title">Rezgés Tesztelő aktív</string>
 
     <!-- Settings button on the main screen -->
-    <string name="settings_button">7. Beállítások</string>
+    <string name="settings_button">11. Beállítások</string>
     <string name="desc_settings_button">Beállítások gomb. Megnyitja a rezgés erősségét, hosszát, szünetét és egyéb részleteit szabályozó képernyőt.</string>
     <string name="announce_already_running">Már fut ez a mód, a gomb nem indította újra</string>
 
@@ -73,16 +89,16 @@
 
     <string name="settings_section_amplitude">Rezgés erőssége</string>
     <string name="use_custom_amplitude_label">Egyéni erősség használata</string>
-    <string name="use_custom_amplitude_description">Ha ki van kapcsolva, a rendszer alapértelmezett erősségét használja az alkalmazás. Csak Android 8.0-tól és csak olyan hardveren módosítható, amely jelzi az erősségszabályzás támogatását - ha nem elérhető, ez a kapcsoló le van tiltva. A Kiszámíthatatlan mód ezt a beállítást nem veszi figyelembe, mert ott az erősség minden lüktetésnél önmagában is véletlenszerű.</string>
+    <string name="use_custom_amplitude_description">Ha ki van kapcsolva, a rendszer alapértelmezett erősségét használja az alkalmazás (ez esetben a Fokozatos Gyengülés maximumról indul). Csak Android 8.0-tól és csak olyan hardveren módosítható, amely jelzi az erősségszabályzás támogatását - ha nem elérhető, ez a kapcsoló le van tiltva. A Kiszámíthatatlan mód ezt a beállítást nem veszi figyelembe, mert ott az erősség minden lüktetésnél önmagában is véletlenszerű; a Kalapács mód pedig mindig a maximumot használja, szándékosan.</string>
     <string name="amplitude_value_format">Erősség: %1$d / 255</string>
 
     <string name="settings_section_duration">Rezgés hossza</string>
     <string name="duration_label">Rezgés hossza ezredmásodpercben (ms)</string>
-    <string name="duration_description">Az Állandó, Pulzáló és Következetlen mód rezgési impulzusainak hossza (a Következetlen módnál ez csak a szórás középpontja). A Vákuum mód ezt nem használja. A Kiszámíthatatlan mód szintén nem veszi figyelembe - ott a hossz minden lüktetésnél önállóan, széles tartományban véletlenszerű.</string>
+    <string name="duration_description">Az Állandó, Pulzáló és Következetlen mód rezgési impulzusainak hossza (a Következetlen módnál ez csak a szórás középpontja). Emellett a Rövid-Hosszú Váltakozás "rövid" szakaszának, a Fokozatos Erősödés/Gyengülés rámpájának, és a Hullámzó Intenzitás egy teljes ciklusának is ez a hossza. A Vákuum, a Kiszámíthatatlan és a Kalapács mód ezt nem használja.</string>
 
     <string name="settings_section_pause">Szünet hossza</string>
     <string name="pause_label">Szünet hossza ezredmásodpercben (ms)</string>
-    <string name="pause_description">A Pulzáló mód impulzusai közti szünet, a Következetlen mód szünetének alapértéke (a szórás középpontja), és a Vákuum mód ciklusai közti szünet. A Kiszámíthatatlan mód ezt sem veszi figyelembe - ott a szünet is önállóan véletlenszerű, jóval szélesebb tartományban.</string>
+    <string name="pause_description">A Pulzáló mód impulzusai közti szünet, a Következetlen mód szünetének alapértéke (a szórás középpontja), a Vákuum mód ciklusai közti szünet, és a Rövid-Hosszú Váltakozás két szakasza közti szünet. A Kiszámíthatatlan és a Kalapács mód ezt nem veszi figyelembe - ott a szünet is önállóan véletlenszerű, jóval szélesebb tartományban.</string>
 
     <string name="settings_section_unpredictability">Kiszámíthatatlanság mértéke (Következetlen módhoz)</string>
     <string name="unpredictability_label">Mennyire térjen el véletlenszerűen a Következetlen mód a fenti hossz- és szünetértékektől. A Kiszámíthatatlan mód nem ezt használja - az mindig a maximális, függetlenített véletlenszerűséggel fut.</string>

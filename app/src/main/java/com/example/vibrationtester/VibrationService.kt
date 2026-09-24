@@ -57,6 +57,10 @@ class VibrationService : Service() {
         const val MODE_VACUUM = 3
         const val MODE_TRULY_RANDOM = 4
         const val MODE_HAMMER = 5
+        const val MODE_SHORT_LONG = 6
+        const val MODE_RAMP_UP = 7
+        const val MODE_RAMP_DOWN = 8
+        const val MODE_WAVE = 9
 
         private const val CHANNEL_ID = "vibration_service_channel"
         private const val NOTIFICATION_ID = 1
@@ -212,6 +216,10 @@ class VibrationService : Service() {
                 MODE_VACUUM -> runVacuum()
                 MODE_TRULY_RANDOM -> runTrulyRandom()
                 MODE_HAMMER -> runHammer()
+                MODE_SHORT_LONG -> runShortLong()
+                MODE_RAMP_UP -> runRampUp()
+                MODE_RAMP_DOWN -> runRampDown()
+                MODE_WAVE -> runWave()
             }
         }
     }
@@ -440,6 +448,136 @@ class VibrationService : Service() {
         }
     }
 
+    // --- Determinisztikus, ismétlődő mintázatok (7-10. mód) --------------
+    //
+    // A négy alábbi mód közös vonása, hogy - a Kiszámíthatatlan móddal és a
+    // Kalapács móddal ellentétben - SZÁNDÉKOSAN nem véletlenszerűek: a
+    // mintázat minden ismétlésnél pontosan ugyanaz. Ezért nem saját,
+    // delay()-alapú ciklussal valósítják meg az ismétlést, hanem a natív
+    // VibrationEffect.createWaveform(timings, amplitudes, repeat=0)
+    // mechanizmust használják - ez egyetlen hívással létrehoz egy
+    // hullámformát, amit maga a rendszer ismétel a 0. indextől a
+    // végtelenségig, amíg vibrator.cancel() le nem állítja. Ez garantáltan
+    // azonos időzítést ad minden körben, mert nem a mi coroutine-unk (ami
+    // apró, valós idejű ütemezési ingadozásoknak van kitéve), hanem a
+    // platform saját, natív rezgésütemezője hajtja végre.
+    //
+    // Mindegyik a Beállítások meglévő "Rezgés hossza" és/vagy "Szünet
+    // hossza" értékét használja fel (nem vezet be új beállítást):
+    // "Rövid-hosszú váltakozás" a hosszhoz és a szünethez, a rámpák és a
+    // hullám a "Rezgés hossza" értéket a rámpa/ciklus teljes
+    // időtartamaként. Ezt a Beállítások leírásai is jelzik.
+
+    // 7. Rövid-hosszú váltakozás ("Short-Long Alternation"): fix mintázat -
+    // rövid rezgés, majd hosszú rezgés -, ami minden ismétlésnél pontosan
+    // ugyanazzal az időzítéssel fut.
+    private suspend fun CoroutineScope.runShortLong() {
+        val shortMs = settings.durationMs
+        val longMs = (settings.durationMs * 3).coerceAtMost(VibrationSettings.MAX_DURATION_MS)
+        val gapMs = settings.pauseMs.coerceAtLeast(20L)
+        val timings = longArrayOf(shortMs, gapMs, longMs, gapMs)
+        // A 255-ös erősség biztonságosan kérhető erősségszabályzás nélküli
+        // hardveren is (100%-ra kerekítődik) - lásd VIBRATION_API_RESEARCH.md.
+        val amplitudes = intArrayOf(255, 0, 255, 0)
+        vibrateWaveform(timings, amplitudes, repeat = 0)
+        while (isActive) {
+            delay(500)
+        }
+    }
+
+    // 8. Fokozatos erősödés ("Gradual Strengthening"): alacsony
+    // intenzitásról indulva, a "Rezgés hossza" beállítás alatt folyamatosan
+    // és fokozatosan erősödik a maximumig, majd újrakezdi.
+    private suspend fun CoroutineScope.runRampUp() {
+        val hasAmplitude = VibrationCapabilities.buildReport(vibrator).hasAmplitudeControl
+        val (timings, amplitudes) = buildIntensityWaveform(settings.durationMs, hasAmplitude) { t ->
+            0.1f + 0.9f * t
+        }
+        vibrateWaveform(timings, amplitudes, repeat = 0)
+        while (isActive) {
+            delay(500)
+        }
+    }
+
+    // 9. Fokozatos gyengülés ("Gradual Weakening"): a Beállításokban
+    // megadott erősségről (vagy ha nincs egyéni erősség beállítva,
+    // maximumról) indulva fokozatosan csökken majdnem nulláig, majd
+    // újrakezdi.
+    private suspend fun CoroutineScope.runRampDown() {
+        val hasAmplitude = VibrationCapabilities.buildReport(vibrator).hasAmplitudeControl
+        val startAmplitude = settings.effectiveAmplitude().let {
+            if (it == VibrationEffect.DEFAULT_AMPLITUDE) 255 else it
+        }
+        val startIntensity = startAmplitude / 255f
+        val (timings, amplitudes) = buildIntensityWaveform(settings.durationMs, hasAmplitude) { t ->
+            startIntensity * (1.0f - 0.95f * t)
+        }
+        vibrateWaveform(timings, amplitudes, repeat = 0)
+        while (isActive) {
+            delay(500)
+        }
+    }
+
+    // 10. Hullámzó intenzitás ("Wave-like Intensity"): az erősség
+    // folyamatosan, simán hullámzik fel-le, szinusz-görbe szerint, fix
+    // ciklushosszal (a "Rezgés hossza" beállítás egy teljes ciklus hossza).
+    private suspend fun CoroutineScope.runWave() {
+        val hasAmplitude = VibrationCapabilities.buildReport(vibrator).hasAmplitudeControl
+        val (timings, amplitudes) = buildIntensityWaveform(settings.durationMs, hasAmplitude) { t ->
+            val normalized = (kotlin.math.sin(2.0 * Math.PI * t) + 1.0) / 2.0 // 0..1
+            (0.15 + 0.85 * normalized).toFloat()
+        }
+        vibrateWaveform(timings, amplitudes, repeat = 0)
+        while (isActive) {
+            delay(500)
+        }
+    }
+
+    /**
+     * Egy hullámformát épít, amelyben az intenzitás az idő függvényében az
+     * [intensityAt] függvény szerint alakul (0.0-1.0 tartomány, t=0..1 a
+     * teljes hossz relatív pozíciója). Ha a hardver támogatja az
+     * erősségszabályzást, közvetlenül az amplitúdót modulálja 30ms-es
+     * lépésekkel - elég finom felbontás ahhoz, hogy simának érződjön. Ha
+     * nem, az on/off arányt (duty cycle-t) modulálja ugyanazzal a
+     * függvénnyel 80ms-es ciklusokban - ez erősségszabályzás nélkül is
+     * érzékelhető erősödés/gyengülés/hullámzás benyomást kelt, ugyanazzal
+     * az elvvel, amit a Kiszámíthatatlan mód mikro-lüktetés-sorozata is
+     * használ (lásd VIBRATION_API_RESEARCH.md).
+     */
+    private fun buildIntensityWaveform(
+        totalDurationMs: Long,
+        hasAmplitude: Boolean,
+        intensityAt: (Float) -> Float
+    ): Pair<LongArray, IntArray> {
+        return if (hasAmplitude) {
+            val stepMs = 30L
+            val stepCount = (totalDurationMs / stepMs).toInt().coerceAtLeast(4)
+            val timings = LongArray(stepCount) { stepMs }
+            val amplitudes = IntArray(stepCount) { i ->
+                val t = i.toFloat() / (stepCount - 1).coerceAtLeast(1)
+                (intensityAt(t).coerceIn(0f, 1f) * 254 + 1).toInt().coerceIn(1, 255)
+            }
+            timings to amplitudes
+        } else {
+            val cycleMs = 80L
+            val cycleCount = (totalDurationMs / cycleMs).toInt().coerceAtLeast(4)
+            val timings = LongArray(cycleCount * 2)
+            val amplitudes = IntArray(cycleCount * 2)
+            for (i in 0 until cycleCount) {
+                val t = i.toFloat() / (cycleCount - 1).coerceAtLeast(1)
+                val intensity = intensityAt(t).coerceIn(0f, 1f)
+                val onMs = (8L + (cycleMs - 16L) * intensity).toLong().coerceIn(4L, cycleMs - 4L)
+                val offMs = cycleMs - onMs
+                timings[i * 2] = onMs
+                timings[i * 2 + 1] = offMs
+                amplitudes[i * 2] = 255
+                amplitudes[i * 2 + 1] = 0
+            }
+            timings to amplitudes
+        }
+    }
+
     // A Kiszámíthatatlan mód négy különböző "eseményalakja" - lásd a
     // runTrulyRandom elején lévő magyarázatot.
     private enum class RandomStrategy { BURST, SPARSE, ROLLING, PAIRED }
@@ -526,12 +664,12 @@ class VibrationService : Service() {
         }
     }
 
-    private fun vibrateWaveform(timings: LongArray, amplitudes: IntArray) {
+    private fun vibrateWaveform(timings: LongArray, amplitudes: IntArray, repeat: Int = -1) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            vibrator.vibrate(VibrationEffect.createWaveform(timings, amplitudes, -1))
+            vibrator.vibrate(VibrationEffect.createWaveform(timings, amplitudes, repeat))
         } else {
             @Suppress("DEPRECATION")
-            vibrator.vibrate(timings, -1)
+            vibrator.vibrate(timings, repeat)
         }
     }
 
@@ -581,6 +719,10 @@ class VibrationService : Service() {
         MODE_VACUUM -> R.string.mode_vacuum_short
         MODE_TRULY_RANDOM -> R.string.mode_truly_random_short
         MODE_HAMMER -> R.string.mode_hammer_short
+        MODE_SHORT_LONG -> R.string.mode_short_long_short
+        MODE_RAMP_UP -> R.string.mode_ramp_up_short
+        MODE_RAMP_DOWN -> R.string.mode_ramp_down_short
+        MODE_WAVE -> R.string.mode_wave_short
         else -> R.string.notification_title
     }
 }

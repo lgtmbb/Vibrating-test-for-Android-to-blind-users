@@ -93,7 +93,7 @@
             android:layout_marginBottom="16dp"
             android:contentDescription="@string/desc_truly_random_button" />
 
-        <!-- 6. Hammer Mode (new) -->
+        <!-- 6. Hammer Mode -->
         <Button
             android:id="@+id/btnHammer"
             android:layout_width="match_parent"
@@ -102,8 +102,56 @@
             android:textSize="18sp"
             android:backgroundTint="#333333"
             android:textColor="#FFFFFF"
-            android:layout_marginBottom="32dp"
+            android:layout_marginBottom="16dp"
             android:contentDescription="@string/desc_hammer_button" />
+
+        <!-- 7. Short-Long Alternation (new) -->
+        <Button
+            android:id="@+id/btnShortLong"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:text="@string/mode_short_long_button"
+            android:textSize="18sp"
+            android:backgroundTint="#333333"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="16dp"
+            android:contentDescription="@string/desc_short_long_button" />
+
+        <!-- 8. Gradual Strengthening (new) -->
+        <Button
+            android:id="@+id/btnRampUp"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:text="@string/mode_ramp_up_button"
+            android:textSize="18sp"
+            android:backgroundTint="#333333"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="16dp"
+            android:contentDescription="@string/desc_ramp_up_button" />
+
+        <!-- 9. Gradual Weakening (new) -->
+        <Button
+            android:id="@+id/btnRampDown"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:text="@string/mode_ramp_down_button"
+            android:textSize="18sp"
+            android:backgroundTint="#333333"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="16dp"
+            android:contentDescription="@string/desc_ramp_down_button" />
+
+        <!-- 10. Wave-like Intensity (new) -->
+        <Button
+            android:id="@+id/btnWave"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:text="@string/mode_wave_button"
+            android:textSize="18sp"
+            android:backgroundTint="#333333"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="32dp"
+            android:contentDescription="@string/desc_wave_button" />
 
         <!-- Stop Button -->
         <Button

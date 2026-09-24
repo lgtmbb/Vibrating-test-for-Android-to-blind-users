@@ -35,6 +35,10 @@ class MainActivity : AppCompatActivity() {
         val btnVacuum = findViewById<Button>(R.id.btnVacuum)
         val btnTrulyRandom = findViewById<Button>(R.id.btnTrulyRandom)
         val btnHammer = findViewById<Button>(R.id.btnHammer)
+        val btnShortLong = findViewById<Button>(R.id.btnShortLong)
+        val btnRampUp = findViewById<Button>(R.id.btnRampUp)
+        val btnRampDown = findViewById<Button>(R.id.btnRampDown)
+        val btnWave = findViewById<Button>(R.id.btnWave)
         val btnStop = findViewById<Button>(R.id.btnStop)
         val btnSettings = findViewById<Button>(R.id.btnSettings)
         chkKeepAlive = findViewById(R.id.chkKeepAlive)
@@ -67,6 +71,18 @@ class MainActivity : AppCompatActivity() {
         }
         btnHammer.setOnClickListener {
             onModeButtonPressed(VibrationService.MODE_HAMMER, R.string.announce_hammer)
+        }
+        btnShortLong.setOnClickListener {
+            onModeButtonPressed(VibrationService.MODE_SHORT_LONG, R.string.announce_short_long)
+        }
+        btnRampUp.setOnClickListener {
+            onModeButtonPressed(VibrationService.MODE_RAMP_UP, R.string.announce_ramp_up)
+        }
+        btnRampDown.setOnClickListener {
+            onModeButtonPressed(VibrationService.MODE_RAMP_DOWN, R.string.announce_ramp_down)
+        }
+        btnWave.setOnClickListener {
+            onModeButtonPressed(VibrationService.MODE_WAVE, R.string.announce_wave)
         }
         btnStop.setOnClickListener {
             stopMode()
