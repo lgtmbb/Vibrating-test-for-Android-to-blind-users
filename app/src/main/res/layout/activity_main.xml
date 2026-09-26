@@ -141,7 +141,7 @@
             android:layout_marginBottom="16dp"
             android:contentDescription="@string/desc_ramp_down_button" />
 
-        <!-- 10. Wave-like Intensity (new) -->
+        <!-- 10. Wave-like Intensity -->
         <Button
             android:id="@+id/btnWave"
             android:layout_width="match_parent"
@@ -150,8 +150,44 @@
             android:textSize="18sp"
             android:backgroundTint="#333333"
             android:textColor="#FFFFFF"
-            android:layout_marginBottom="32dp"
+            android:layout_marginBottom="16dp"
             android:contentDescription="@string/desc_wave_button" />
+
+        <!-- 11. Stepped Strengthening (new) -->
+        <Button
+            android:id="@+id/btnStepped"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:text="@string/mode_stepped_button"
+            android:textSize="18sp"
+            android:backgroundTint="#333333"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="16dp"
+            android:contentDescription="@string/desc_stepped_button" />
+
+        <!-- 12. Sudden Level Switch (new) -->
+        <Button
+            android:id="@+id/btnSuddenSwitch"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:text="@string/mode_sudden_switch_button"
+            android:textSize="18sp"
+            android:backgroundTint="#333333"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="16dp"
+            android:contentDescription="@string/desc_sudden_switch_button" />
+
+        <!-- 13. Burst Series (new) -->
+        <Button
+            android:id="@+id/btnBurstSeries"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:text="@string/mode_burst_series_button"
+            android:textSize="18sp"
+            android:backgroundTint="#333333"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="32dp"
+            android:contentDescription="@string/desc_burst_series_button" />
 
         <!-- Stop Button -->
         <Button

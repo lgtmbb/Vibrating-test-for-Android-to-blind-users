@@ -6,8 +6,8 @@ kompatibilis.
 
 ## Mit csinál a program
 
-Tíz rezgésmintát tud lejátszani, és bármelyik leállítható a Leállítás
-gombbal:
+Tizenhárom rezgésmintát tud lejátszani, és bármelyik leállítható a
+Leállítás gombbal:
 
 1. **Állandó mód** – folyamatos, gyakorlatilag szünet nélküli rezgés,
    beállítható hosszal, mindig kis átfedéssel, hogy ne legyen érzékelhető
@@ -31,6 +31,12 @@ gombbal:
    fokozatosan gyengül majdnem nulláig, majd újrakezdi.
 10. **Hullámzó intenzitás** *(új)* – az erősség folyamatosan hullámzik
     fel-le, szinusz-görbe szerint.
+11. **Lépcsőzetes erősödés** *(új)* – 5 diszkrét szinten emelkedik,
+    minden szint közt hirtelen, éles váltással.
+12. **Hirtelen módváltás** *(új)* – folyamatos rezgés, ami hirtelen egy
+    másik, magasabb erősségre vált, sosem áll le teljesen.
+13. **Burst / sorozat** *(új)* – 4 gyors lüktetésből álló csoportok,
+    hosszabb csendekkel elválasztva, minden csoport azonos.
 
 Minden gombhoz `contentDescription` tartozik, ezért TalkBack alatt a gomb
 látható felirata helyett a hosszabb, cselekvést leíró szöveg hangzik el (ez a
@@ -124,6 +130,28 @@ folytonos görbéhez - ez API 26-tól (Android 8.0) mindenhol működik, nem
 csak a legújabb készülékeken. Erősségszabályzás nélküli hardveren mindhárom
 az on/off arányt (duty cycle-t) modulálja amplitúdó helyett, ugyanazzal a
 technikával, amit a Kiszámíthatatlan mód mikro-lüktetés-sorozata is használ.
+
+## Három további determinisztikus mód: Lépcsőzetes erősödés, Hirtelen módváltás, Burst/sorozat
+
+Ez a három mód ugyanazt a natív, `repeat=0` alapú hullámforma-technikát
+használja, mint a fenti négy, de más céllal: itt a lényeg pont az, hogy a
+szintek/csoportok közti átmenet **hirtelen, éles legyen, interpoláció
+nélkül** - nem egy folytonos görbe közelítése, hanem valódi, diszkrét
+lépcsőzés.
+
+- **Lépcsőzetes erősödés**: 5 diszkrét erősségi szint, mindegyik a "Rezgés
+  hossza" ideig tart, majd hirtelen vált a következőre.
+- **Hirtelen módváltás**: két fix szint (40% és 100%) között vált
+  hirtelen, folyamatosan, soha nem áll le teljesen.
+- **Burst / sorozat**: 4 gyors lüktetésből álló, mindig azonos csoportok,
+  a "Szünet hossza" által meghatározott hosszabb csendekkel elválasztva -
+  ez a Kiszámíthatatlan mód véletlenszerű BURST stratégiájának
+  determinisztikus ellentéte.
+
+Mivel `createWaveform` egymást követő, nem-nulla amplitúdójú szegmensei
+között nincs kényszerű szünet, a lépcsőzős/váltós módoknál nincs szükség a
+rámpáknál használt apró lépésekre - elég annyi szegmens, ahány szint van,
+mindegyik a teljes szint-időtartamra állítva.
 
 ## Amit hozzáadtam: "Folytatás képernyőzár után is" jelölőnégyzet
 

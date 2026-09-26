@@ -5,6 +5,35 @@ egy .zip-be csomagolt fájlból állt, teljes build-rendszer nélkül. Ez a
 verzió az első, ami tényleges, lefordítható Android Studio projektként van
 strukturálva.
 
+## [1.8.0]
+
+### Hozzáadva
+- **Három új, determinisztikus mód**:
+  - **11. Lépcsőzetes erősödés**: az erősség 5 diszkrét szinten emelkedik,
+    minden szint a "Rezgés hossza" ideig tart, majd hirtelen (interpoláció
+    nélkül) vált a következőre - szándékos ellentéte a sima "Fokozatos
+    erősödés" módnak.
+  - **12. Hirtelen módváltás**: folyamatosan rezeg egy állandó erősségen,
+    majd hirtelen átvált egy másik, magasabb erősségre - sosem áll le
+    teljesen, nincs interpoláció a két szint között.
+  - **13. Burst / sorozat**: 4 gyors lüktetésből álló csoportokat játszik
+    le, hosszabb csendes szakaszokkal elválasztva - minden csoport
+    pontosan ugyanannyi lüktetést tartalmaz, azonos időzítéssel (a
+    Kiszámíthatatlan mód véletlenszerű BURST stratégiájának
+    determinisztikus ellentéte).
+- `buildSteppedWaveform` segédfüggvény: diszkrét, éles átmenetű szintekből
+  épít hullámformát (a meglévő `buildIntensityWaveform` sima
+  interpolációjával szemben) - lásd `VIBRATION_API_RESEARCH.md` új
+  szakaszát arról, miért nem kell hozzá lépcsőzéssel közelíteni, ha a cél
+  éppen az éles váltás.
+
+### Változott
+- A gombok újraszámozva: ...10. Hullámzó intenzitás, 11. Lépcsőzetes
+  erősödés, 12. Hirtelen módváltás, 13. Burst/sorozat, majd Leállítás,
+  majd 14. Beállítások.
+- A "Rezgés hossza" és "Szünet hossza" beállítások leírása frissítve az
+  új módokkal.
+
 ## [1.7.0]
 
 ### Hozzáadva

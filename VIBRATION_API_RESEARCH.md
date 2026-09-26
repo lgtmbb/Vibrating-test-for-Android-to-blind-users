@@ -194,6 +194,19 @@ envelope API-val, ami csak Android 16-tól létezik - így ezek a módok
 minden, erősségszabályzással rendelkező készüléken működnek, nem csak a
 legújabbakon.
 
+### Valódi, szándékosan éles lépcsőzés (nem közelítés)
+
+A "Lépcsőzetes erősödés" és a "Hirtelen módváltás" mód más esetben pont
+az ellenkezőjét akarja: itt a cél kifejezetten a HIRTELEN, interpoláció
+nélküli váltás egy-egy diszkrét szint között, nem egy folytonos görbe
+közelítése. Ehhez nincs szükség 30ms-es apró lépésekre - elég annyi
+`createWaveform` szegmens, ahány szint van (5, illetve 2), mindegyik a
+teljes szint-időtartamra állítva, eltérő amplitúdóval. Mivel
+`createWaveform` egymást követő, nem-nulla amplitúdójú szegmensei között
+nincs kényszerű szünet, a rendszer a motort közvetlenül, szünet nélkül
+állítja át a következő szint amplitúdójára - ez pontosan a kért,
+"abrupt", átmenet nélküli váltást adja.
+
 ## Ismétlődés elkerülése - nem Android-specifikus, de idevágó kutatás
 
 A "Kiszámíthatatlan mód" nem csak az Android rezgés-API-jára épül: a

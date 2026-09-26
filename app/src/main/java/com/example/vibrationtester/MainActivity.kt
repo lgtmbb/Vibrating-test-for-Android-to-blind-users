@@ -39,6 +39,9 @@ class MainActivity : AppCompatActivity() {
         val btnRampUp = findViewById<Button>(R.id.btnRampUp)
         val btnRampDown = findViewById<Button>(R.id.btnRampDown)
         val btnWave = findViewById<Button>(R.id.btnWave)
+        val btnStepped = findViewById<Button>(R.id.btnStepped)
+        val btnSuddenSwitch = findViewById<Button>(R.id.btnSuddenSwitch)
+        val btnBurstSeries = findViewById<Button>(R.id.btnBurstSeries)
         val btnStop = findViewById<Button>(R.id.btnStop)
         val btnSettings = findViewById<Button>(R.id.btnSettings)
         chkKeepAlive = findViewById(R.id.chkKeepAlive)
@@ -83,6 +86,15 @@ class MainActivity : AppCompatActivity() {
         }
         btnWave.setOnClickListener {
             onModeButtonPressed(VibrationService.MODE_WAVE, R.string.announce_wave)
+        }
+        btnStepped.setOnClickListener {
+            onModeButtonPressed(VibrationService.MODE_STEPPED_STRENGTHENING, R.string.announce_stepped)
+        }
+        btnSuddenSwitch.setOnClickListener {
+            onModeButtonPressed(VibrationService.MODE_SUDDEN_SWITCH, R.string.announce_sudden_switch)
+        }
+        btnBurstSeries.setOnClickListener {
+            onModeButtonPressed(VibrationService.MODE_BURST_SERIES, R.string.announce_burst_series)
         }
         btnStop.setOnClickListener {
             stopMode()

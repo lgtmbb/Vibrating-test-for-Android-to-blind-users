@@ -61,6 +61,9 @@ class VibrationService : Service() {
         const val MODE_RAMP_UP = 7
         const val MODE_RAMP_DOWN = 8
         const val MODE_WAVE = 9
+        const val MODE_STEPPED_STRENGTHENING = 10
+        const val MODE_SUDDEN_SWITCH = 11
+        const val MODE_BURST_SERIES = 12
 
         private const val CHANNEL_ID = "vibration_service_channel"
         private const val NOTIFICATION_ID = 1
@@ -220,6 +223,9 @@ class VibrationService : Service() {
                 MODE_RAMP_UP -> runRampUp()
                 MODE_RAMP_DOWN -> runRampDown()
                 MODE_WAVE -> runWave()
+                MODE_STEPPED_STRENGTHENING -> runSteppedStrengthening()
+                MODE_SUDDEN_SWITCH -> runSuddenSwitch()
+                MODE_BURST_SERIES -> runBurstSeries()
             }
         }
     }
@@ -533,6 +539,115 @@ class VibrationService : Service() {
         }
     }
 
+    // 11. Lépcsőzetes erősödés ("Stepped Strengthening"): az erősség
+    // néhány DISZKRÉT szinten emelkedik - minden szint pontosan a "Rezgés
+    // hossza" ideig tart, majd HIRTELEN (interpoláció nélkül) átvált a
+    // következőre. Ez szándékosan különbözik a "Fokozatos erősödés"
+    // módtól, ami sima, folytonos átmenetet közelít apró lépésekkel - itt
+    // pont az a lényeg, hogy a szintek közti váltás érezhetően éles legyen.
+    private suspend fun CoroutineScope.runSteppedStrengthening() {
+        val hasAmplitude = VibrationCapabilities.buildReport(vibrator).hasAmplitudeControl
+        val stepCount = 5
+        val (timings, amplitudes) = buildSteppedWaveform(settings.durationMs, stepCount, hasAmplitude) { i ->
+            (i + 1).toFloat() / stepCount
+        }
+        vibrateWaveform(timings, amplitudes, repeat = 0)
+        while (isActive) {
+            delay(500)
+        }
+    }
+
+    // 12. Hirtelen módváltás ("Sudden Level Switch"): folyamatosan rezeg
+    // egy állandó erősségen, majd előre meghatározott időpontban HIRTELEN
+    // átvált egy másik erősségre - interpoláció nélkül, soha nem áll le
+    // teljesen (ellentétben pl. a Pulzáló móddal, ami ki/be kapcsol). A
+    // két szint mindegyike a "Rezgés hossza" ideig tart.
+    private suspend fun CoroutineScope.runSuddenSwitch() {
+        val hasAmplitude = VibrationCapabilities.buildReport(vibrator).hasAmplitudeControl
+        val (timings, amplitudes) = buildSteppedWaveform(settings.durationMs, 2, hasAmplitude) { i ->
+            if (i == 0) 0.4f else 1.0f
+        }
+        vibrateWaveform(timings, amplitudes, repeat = 0)
+        while (isActive) {
+            delay(500)
+        }
+    }
+
+    // 13. Burst / sorozat ("Burst Series"): gyors lüktetés-csoportokat
+    // állít elő, hosszabb csendes szakaszokkal elválasztva. Minden csoport
+    // PONTOSAN ugyanannyi lüktetést tartalmaz, azonos időzítéssel - ez
+    // szándékosan a determinisztikus ellentéte a Kiszámíthatatlan mód
+    // BURST stratégiájának, ahol a csoport mérete és időzítése
+    // ciklusonként véletlenszerű. A lüktetés hossza a "Rezgés hossza"
+    // beállításból származik (legfeljebb 150ms-re korlátozva, hogy tényleg
+    // "gyors" maradjon), a csoportok közti hosszabb csend a "Szünet
+    // hossza" beállításból.
+    private suspend fun CoroutineScope.runBurstSeries() {
+        val pulsesPerGroup = 4
+        val pulseMs = settings.durationMs.coerceIn(20L, 150L)
+        val innerGapMs = 40L
+        val groupSilenceMs = settings.pauseMs.coerceAtLeast(200L)
+
+        val segmentCount = pulsesPerGroup * 2
+        val timings = LongArray(segmentCount)
+        // A 255-ös erősség biztonságosan kérhető erősségszabályzás nélküli
+        // hardveren is (100%-ra kerekítődik) - lásd VIBRATION_API_RESEARCH.md.
+        val amplitudes = IntArray(segmentCount)
+        for (i in 0 until pulsesPerGroup) {
+            timings[i * 2] = pulseMs
+            amplitudes[i * 2] = 255
+            val isLastInGroup = i == pulsesPerGroup - 1
+            timings[i * 2 + 1] = if (isLastInGroup) groupSilenceMs else innerGapMs
+            amplitudes[i * 2 + 1] = 0
+        }
+        vibrateWaveform(timings, amplitudes, repeat = 0)
+        while (isActive) {
+            delay(500)
+        }
+    }
+
+    /**
+     * [stepCount] darab, egyenként [stepDurationMs] hosszú, DISZKRÉT
+     * szintből épít hullámformát - a szintek közt nincs átmenet/lépcsőzés,
+     * a váltás mindig hirtelen. [levelAt] adja meg az egyes szintek
+     * intenzitását (0.0-1.0, index 0..stepCount-1). Erősségszabályzással
+     * rendelkező hardveren közvetlenül az amplitúdót állítja szintenként;
+     * anélkül az on/off arányt (duty cycle-t) modulálja szintenként, hogy
+     * erősségszabályzás nélkül is érezhető különbség legyen a szintek közt
+     * - ugyanaz az elv, mint a [buildIntensityWaveform]-nál.
+     */
+    private fun buildSteppedWaveform(
+        stepDurationMs: Long,
+        stepCount: Int,
+        hasAmplitude: Boolean,
+        levelAt: (Int) -> Float
+    ): Pair<LongArray, IntArray> {
+        return if (hasAmplitude) {
+            val timings = LongArray(stepCount) { stepDurationMs }
+            val amplitudes = IntArray(stepCount) { i ->
+                (levelAt(i).coerceIn(0f, 1f) * 254 + 1).toInt().coerceIn(1, 255)
+            }
+            timings to amplitudes
+        } else {
+            val cycleMs = 80L
+            val cyclesPerStep = (stepDurationMs / cycleMs).toInt().coerceAtLeast(1)
+            val timingsList = ArrayList<Long>(stepCount * cyclesPerStep * 2)
+            val amplitudesList = ArrayList<Int>(stepCount * cyclesPerStep * 2)
+            for (step in 0 until stepCount) {
+                val intensity = levelAt(step).coerceIn(0f, 1f)
+                repeat(cyclesPerStep) {
+                    val onMs = (8L + (cycleMs - 16L) * intensity).toLong().coerceIn(4L, cycleMs - 4L)
+                    val offMs = cycleMs - onMs
+                    timingsList.add(onMs)
+                    amplitudesList.add(255)
+                    timingsList.add(offMs)
+                    amplitudesList.add(0)
+                }
+            }
+            timingsList.toLongArray() to amplitudesList.toIntArray()
+        }
+    }
+
     /**
      * Egy hullámformát épít, amelyben az intenzitás az idő függvényében az
      * [intensityAt] függvény szerint alakul (0.0-1.0 tartomány, t=0..1 a
@@ -723,6 +838,9 @@ class VibrationService : Service() {
         MODE_RAMP_UP -> R.string.mode_ramp_up_short
         MODE_RAMP_DOWN -> R.string.mode_ramp_down_short
         MODE_WAVE -> R.string.mode_wave_short
+        MODE_STEPPED_STRENGTHENING -> R.string.mode_stepped_short
+        MODE_SUDDEN_SWITCH -> R.string.mode_sudden_switch_short
+        MODE_BURST_SERIES -> R.string.mode_burst_series_short
         else -> R.string.notification_title
     }
 }
