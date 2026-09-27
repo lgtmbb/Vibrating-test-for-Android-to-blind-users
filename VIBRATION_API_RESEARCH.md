@@ -158,6 +158,55 @@ támaszkodunk.
 - Forrás: [Create custom haptic effects - Vibration waveform with envelopes](https://developer.android.com/develop/ui/views/haptics/custom-haptic-effects#vibration-waveform-with-envelopes),
   [Implement piecewise linear envelope effects (AOSP)](https://source.android.com/docs/core/interaction/haptics/haptics-pwle)
 
+## Csomag-aláírás és telepítési hiba - kritikus javítás
+
+Ez a szakasz nem rezgés-API-kutatás, hanem egy súlyos, a projekt
+kiadási folyamatát érintő hiba dokumentálása, mert a jövőben is
+releváns marad.
+
+**A tünet**: egy korábbi verzió telepítése után egy újabb verzió
+telepítése "az alkalmazás nincs telepítve" hibával elutasításra került,
+a Play Protect figyelmeztetéseknél megszokott "mégis telepítés" opció
+nélkül.
+
+**Az ok**: a `debug` build-típusnak nem volt explicit megadva
+`signingConfig`. Ilyenkor az Android Gradle Plugin egy alapértelmezett,
+`~/.android/debug.keystore` útvonalon várt kulcsot használ - ha ez a
+fájl nem létezik (és egy friss GitHub Actions futtatógépen sosem
+létezik, mert minden futás egy vadonatúj, üres virtuális gépen indul),
+az AGP **automatikusan generál egyet, futásonként újat**. Emiatt a v1.0.0-tól
+kezdve minden egyes kiadott `.apk` **más-más, egyszer használatos
+aláírással** rendelkezett. Android biztonsági okból nem engedi, hogy egy
+már telepített csomagot egy eltérő aláírású verzió felülírjon - innen a
+hiba.
+
+**A javítás**: egy állandó, 30 évig érvényes debug-kulcsot generáltam
+(`app/debug.keystore`, `keytool -genkeypair`), és az `app/build.gradle`
+`signingConfigs.debug` blokkjában erre mutatunk explicit módon, a
+jól ismert, nyilvános Android debug-kulcs alapértelmezett jelszavaival
+(`android`/`android`, alias `androiddebugkey` - ezek nem titkosak, minden
+Android debug-kulcs ugyanezt használja, mert debug build soha nem kerül
+éles disztribúcióba). Egy `signingConfigs` blokkban `debug` néven
+definiált konfiguráció automatikusan felülírja az AGP beépített
+alapértelmezett debug-aláírását - nem kell külön hozzárendelni a
+`debug` build-típushoz.
+
+**Ez a keystore fájl bináris, és szándékosan commitolva van a repóba** -
+ez nem biztonsági kockázat, mert (1) kizárólag debug buildekhez
+használjuk, sosem élesben, (2) a jelszavak amúgy is nyilvánosan ismertek
+minden Android debug-kulcsnál, (3) pontosan az a cél, hogy minden
+gépen és minden CI-futáson ugyanaz a kulcs legyen elérhető - egy
+`.gitignore`-olt, csak helyi kulcs pont az ellenkező hatást érné el.
+
+**Egyszeri teendő a felhasználó oldalán**: mivel a korábbi (v1.0.0-v1.8.0)
+kiadások mind eltérő, ideiglenes kulccsal voltak aláírva, a jelenleg
+telepített verziót egyszer teljesen el kell távolítani, mielőtt az ezt
+követő, már stabil kulccsal aláírt verzió telepíthető. Ezután minden
+további frissítés zökkenőmentesen, eltávolítás nélkül fog menni, mert
+mind ugyanazzal a kulccsal lesz aláírva.
+
+Forrás: [App signing overview - Android fejlesztői dokumentáció](https://developer.android.com/studio/publish/app-signing)
+
 ## Natív, ismétlődő hullámforma - determinisztikus mintázatokhoz
 
 A "Rövid-hosszú váltakozás", "Fokozatos erősödés", "Fokozatos gyengülés" és
@@ -256,6 +305,35 @@ játékfejlesztésben (elsősorban hangtervezésben) rég megoldott probléma.
   igénylő verzió továbbra sem egy-két csúszkával leírható felhasználói
   beállítás, hanem egy teljes hullámforma-szerkesztő lenne - ha ez is
   kell, jelezd, külön kiegészítő fejlesztésként megoldható.
+
+## Átfedések a meglévő módokkal - átlátható jelzés
+
+Amikor a felhasználó a "Véletlenszerű időzítés", "Véletlenszerű
+intenzitás", "Véletlenszerű időzítés + intenzitás", "Szinuszos",
+"Négyszögjel-szerű" és "Fűrészfog" módokat kérte, három közülük
+technikailag jelentősen átfed egy már meglévő móddal. Ezt itt, nem pedig
+elhallgatva dokumentáljuk:
+
+- **"Szinuszos" ≈ "Hullámzó intenzitás" (10. mód)**: mindkettő szinusz-
+  görbe szerint modulálja az erősséget. A különbség: a "Hullámzó
+  intenzitás" a "Rezgés hossza" beállításból számolt ciklushosszal
+  dolgozik, míg a "Szinuszos" a specifikáció szerint kifejezetten Hz-ben
+  megadható frekvenciát és külön állítható lengés-mértéket kapott - ezért
+  külön mód, saját beállításokkal, nem csupán álnév.
+- **"Négyszögjel-szerű" ≈ "Pulzáló mód" (2. mód)**: mindkettő éles
+  BE/KI váltásokat ad. A különbség: a "Pulzáló mód" a "Rezgés hossza" és
+  "Szünet hossza" két KÜLÖN beállításából épül (tetszőlegesen aszimmetrikus
+  be/ki arány), míg a "Négyszögjel-szerű" mód a Hz-alapú frekvenciából
+  szimmetrikus (50%-os kitöltési tényezőjű) négyszögjelet számol - ez egy
+  precízebb, jelfeldolgozási értelemben vett "négyszögjel" fogalomnak felel
+  meg.
+- **"Fűrészfog" ≈ "Fokozatos erősödés" (8. mód)**: ez a kettő
+  **funkcionálisan azonos** - egy fűrészfog-hullám definíció szerint
+  pontosan az, amit a "Fokozatos erősödés" már csinál: lineáris rámpa
+  minimumtól maximumig, amit a natív hullámforma-ismétlés (`repeat=0`)
+  azonnali, interpoláció nélküli visszaugrással zár le minden ciklus
+  végén. Nem volt mit technikailag hozzátenni - külön gombként azért
+  szerepel, mert külön kérték, két különböző névvel.
 
 ## Fő hivatkozások
 

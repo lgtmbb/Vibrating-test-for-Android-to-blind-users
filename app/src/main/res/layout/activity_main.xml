@@ -177,7 +177,7 @@
             android:layout_marginBottom="16dp"
             android:contentDescription="@string/desc_sudden_switch_button" />
 
-        <!-- 13. Burst Series (new) -->
+        <!-- 13. Burst Series -->
         <Button
             android:id="@+id/btnBurstSeries"
             android:layout_width="match_parent"
@@ -186,8 +186,80 @@
             android:textSize="18sp"
             android:backgroundTint="#333333"
             android:textColor="#FFFFFF"
-            android:layout_marginBottom="32dp"
+            android:layout_marginBottom="16dp"
             android:contentDescription="@string/desc_burst_series_button" />
+
+        <!-- 14. Random Timing (new) -->
+        <Button
+            android:id="@+id/btnRandomTiming"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:text="@string/mode_random_timing_button"
+            android:textSize="18sp"
+            android:backgroundTint="#333333"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="16dp"
+            android:contentDescription="@string/desc_random_timing_button" />
+
+        <!-- 15. Random Intensity (new) -->
+        <Button
+            android:id="@+id/btnRandomIntensity"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:text="@string/mode_random_intensity_button"
+            android:textSize="18sp"
+            android:backgroundTint="#333333"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="16dp"
+            android:contentDescription="@string/desc_random_intensity_button" />
+
+        <!-- 16. Random Timing + Intensity (new) -->
+        <Button
+            android:id="@+id/btnRandomTimingIntensity"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:text="@string/mode_random_timing_intensity_button"
+            android:textSize="18sp"
+            android:backgroundTint="#333333"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="16dp"
+            android:contentDescription="@string/desc_random_timing_intensity_button" />
+
+        <!-- 17. Sine (new) -->
+        <Button
+            android:id="@+id/btnSine"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:text="@string/mode_sine_button"
+            android:textSize="18sp"
+            android:backgroundTint="#333333"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="16dp"
+            android:contentDescription="@string/desc_sine_button" />
+
+        <!-- 18. Square Wave (new) -->
+        <Button
+            android:id="@+id/btnSquareWave"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:text="@string/mode_square_wave_button"
+            android:textSize="18sp"
+            android:backgroundTint="#333333"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="16dp"
+            android:contentDescription="@string/desc_square_wave_button" />
+
+        <!-- 19. Sawtooth (new) -->
+        <Button
+            android:id="@+id/btnSawtooth"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:text="@string/mode_sawtooth_button"
+            android:textSize="18sp"
+            android:backgroundTint="#333333"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="32dp"
+            android:contentDescription="@string/desc_sawtooth_button" />
 
         <!-- Stop Button -->
         <Button

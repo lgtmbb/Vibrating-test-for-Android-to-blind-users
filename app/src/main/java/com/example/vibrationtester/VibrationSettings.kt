@@ -77,6 +77,22 @@ class VibrationSettings(context: Context) {
         set(value) = prefs.edit()
             .putStringSet(KEY_PRIMITIVES, value.map { it.toString() }.toSet()).apply()
 
+    // Tizedhertzben tárolva (1-100 -> 0.1-10.0 Hz), hogy egész SeekBar
+    // értékként állítható legyen. A Szinuszos és a Négyszögjel-szerű mód
+    // közösen használja ezt a frekvenciát.
+    var waveFrequencyTenthsHz: Int
+        get() = prefs.getInt(KEY_WAVE_FREQUENCY, DEFAULT_WAVE_FREQUENCY_TENTHS_HZ)
+        set(value) = prefs.edit()
+            .putInt(KEY_WAVE_FREQUENCY, value.coerceIn(1, 100)).apply()
+
+    fun waveFrequencyHz(): Double = waveFrequencyTenthsHz / 10.0
+
+    /** 5-100: mekkora legyen a Szinuszos mód erősség-lengésének mértéke. */
+    var sineAmplitudePercent: Int
+        get() = prefs.getInt(KEY_SINE_AMPLITUDE, DEFAULT_SINE_AMPLITUDE_PERCENT)
+        set(value) = prefs.edit()
+            .putInt(KEY_SINE_AMPLITUDE, value.coerceIn(5, 100)).apply()
+
     companion object {
         private const val PREFS_NAME = "vibration_tester_prefs"
         private const val KEY_KEEP_ALIVE = "keep_alive_after_lock"
@@ -89,6 +105,8 @@ class VibrationSettings(context: Context) {
         private const val KEY_VIBRATION_TYPE = "vibration_type"
         private const val KEY_PREDEFINED_EFFECT = "predefined_effect_id"
         private const val KEY_PRIMITIVES = "selected_primitives"
+        private const val KEY_WAVE_FREQUENCY = "wave_frequency_tenths_hz"
+        private const val KEY_SINE_AMPLITUDE = "sine_amplitude_percent"
 
         const val DEFAULT_DURATION_MS = 400L
         const val DEFAULT_PAUSE_MS = 800L
@@ -97,5 +115,7 @@ class VibrationSettings(context: Context) {
         const val MIN_PAUSE_MS = 0L
         const val MAX_PAUSE_MS = 5000L
         const val DEFAULT_UNPREDICTABILITY = 60
+        const val DEFAULT_WAVE_FREQUENCY_TENTHS_HZ = 20 // 2.0 Hz
+        const val DEFAULT_SINE_AMPLITUDE_PERCENT = 80
     }
 }

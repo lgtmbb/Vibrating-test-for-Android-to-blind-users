@@ -64,6 +64,12 @@ class VibrationService : Service() {
         const val MODE_STEPPED_STRENGTHENING = 10
         const val MODE_SUDDEN_SWITCH = 11
         const val MODE_BURST_SERIES = 12
+        const val MODE_RANDOM_TIMING = 13
+        const val MODE_RANDOM_INTENSITY = 14
+        const val MODE_RANDOM_TIMING_INTENSITY = 15
+        const val MODE_SINE = 16
+        const val MODE_SQUARE_WAVE = 17
+        const val MODE_SAWTOOTH = 18
 
         private const val CHANNEL_ID = "vibration_service_channel"
         private const val NOTIFICATION_ID = 1
@@ -226,6 +232,12 @@ class VibrationService : Service() {
                 MODE_STEPPED_STRENGTHENING -> runSteppedStrengthening()
                 MODE_SUDDEN_SWITCH -> runSuddenSwitch()
                 MODE_BURST_SERIES -> runBurstSeries()
+                MODE_RANDOM_TIMING -> runRandomTiming()
+                MODE_RANDOM_INTENSITY -> runRandomIntensity()
+                MODE_RANDOM_TIMING_INTENSITY -> runRandomTimingAndIntensity()
+                MODE_SINE -> runSine()
+                MODE_SQUARE_WAVE -> runSquareWave()
+                MODE_SAWTOOTH -> runSawtooth()
             }
         }
     }
@@ -606,6 +618,133 @@ class VibrationService : Service() {
         }
     }
 
+    // --- Véletlenszerű, de EGYSZERŰBB módok (14-16.) -----------------------
+    //
+    // A Kiszámíthatatlan móddal (5.) ellentétben ezek nem váltanak
+    // stratégiák/ízek között, és nem alkalmaznak ismétlődés-elkerülést -
+    // mindegyik egyetlen, jól körülhatárolt tengelyt (időzítés, erősség,
+    // vagy mindkettő) tesz kifejezetten véletlenszerűvé, valós idejű
+    // (nem natívan ismétlődő) coroutine-ciklussal, hiszen a specifikáció
+    // szerint "nem követhet kiszámítható, ismétlődő mintát" - ez kizárja a
+    // natív repeat=0 hullámforma-technikát, ami definíció szerint mindig
+    // pontosan ugyanazt ismétli.
+
+    // 14. Véletlenszerű időzítés ("Random Timing"): a lüktetések hossza és
+    // erőssége fix (a Beállításokból), csak a köztük lévő szünet
+    // véletlenszerű, minden alkalommal újra húzva - így az időzítés nem
+    // követ felismerhető, ismétlődő mintát.
+    private suspend fun CoroutineScope.runRandomTiming() {
+        val pulseMs = settings.durationMs
+        val amplitude = settings.effectiveAmplitude()
+        while (isActive) {
+            vibrateOneShot(pulseMs, amplitude)
+            delay(pulseMs)
+            delay(Random.nextLong(100L, 3000L))
+        }
+    }
+
+    // 15. Véletlenszerű intenzitás ("Random Intensity"): a rezgés
+    // folyamatosan aktív marad (a szegmensek között nincs szünet), csak az
+    // erősség véletlenszerű minden egyes, fix hosszúságú szegmensnél - az
+    // időzítéstől függetlenül.
+    private suspend fun CoroutineScope.runRandomIntensity() {
+        val hasAmplitude = VibrationCapabilities.buildReport(vibrator).hasAmplitudeControl
+        val segmentMs = 150L
+        while (isActive) {
+            if (hasAmplitude) {
+                vibrateOneShot(segmentMs, Random.nextInt(1, 256))
+                delay(segmentMs)
+            } else {
+                // Erősségszabályzás nélkül az on/off arányt (duty cycle-t)
+                // moduláljuk véletlenszerűen szegmensenként - ez közelíti a
+                // "folyamatosan aktív, de ingadozó erősségű" benyomást a
+                // lehető legjobban ezen a hardveren.
+                val intensity = Random.nextDouble(0.1, 1.0)
+                val onMs = (segmentMs * intensity).toLong().coerceIn(15L, segmentMs - 5L)
+                vibrateOneShot(onMs, 255)
+                delay(segmentMs)
+            }
+        }
+    }
+
+    // 16. Véletlenszerű időzítés + intenzitás ("Random Timing + Intensity"):
+    // mind a lüktetések közti időköz, mind az erősségük egymástól
+    // függetlenül, minden alkalommal újra véletlenszerű - nem ismétlődik
+    // fix minta. Ez a Kiszámíthatatlan mód (5.) egyszerűsített,
+    // egystratégiás, ismétlődés-elkerülés nélküli megfelelője, kifejezetten
+    // erre a két tengelyre (időzítés + erősség) szűkítve.
+    private suspend fun CoroutineScope.runRandomTimingAndIntensity() {
+        val hasAmplitude = VibrationCapabilities.buildReport(vibrator).hasAmplitudeControl
+        while (isActive) {
+            val duration = Random.nextLong(50L, 1200L)
+            val amplitude = if (hasAmplitude) Random.nextInt(1, 256) else VibrationEffect.DEFAULT_AMPLITUDE
+            vibrateOneShot(duration, amplitude)
+            delay(duration)
+            delay(Random.nextLong(100L, 3000L))
+        }
+    }
+
+    // --- Periodikus jelalakok (17-19.) --------------------------------------
+    //
+    // Mindhárom natív, repeat=0 alapú hullámformát használ, mint a többi
+    // determinisztikus mód. A Szinuszos és a Négyszögjel-szerű mód közösen
+    // használja a Beállítások Hz-alapú frekvencia-csúszkáját.
+
+    // 17. Szinuszos ("Sinusoidal"): az erősség simán, szinusz-görbe szerint
+    // modulálódik, a Beállításokban Hz-ben megadható frekvenciával és a
+    // lengés mértékével (amplitúdó). A "Hullámzó intenzitás" (10. mód)
+    // ehhez nagyon hasonló, de ott a ciklushosszt a "Rezgés hossza"
+    // határozza meg, itt viszont kifejezetten a specifikáció szerinti,
+    // Hz-ben kifejezett frekvencia és külön állítható lengés-mérték a
+    // vezérlő paraméter.
+    private suspend fun CoroutineScope.runSine() {
+        val hasAmplitude = VibrationCapabilities.buildReport(vibrator).hasAmplitudeControl
+        val cycleDurationMs = (1000.0 / settings.waveFrequencyHz()).toLong().coerceIn(50L, 10000L)
+        val swing = settings.sineAmplitudePercent / 100f
+        val (timings, amplitudes) = buildIntensityWaveform(cycleDurationMs, hasAmplitude) { t ->
+            val normalized = (kotlin.math.sin(2.0 * Math.PI * t) + 1.0) / 2.0 // 0..1
+            0.5f + (normalized.toFloat() - 0.5f) * swing
+        }
+        vibrateWaveform(timings, amplitudes, repeat = 0)
+        while (isActive) {
+            delay(500)
+        }
+    }
+
+    // 18. Négyszögjel-szerű ("Square Wave"): éles, azonnali váltás BE és KI
+    // között, fix frekvenciával (ugyanaz a Hz-alapú beállítás, mint a
+    // Szinuszos módnál), 50%-os kitöltési tényezővel.
+    private suspend fun CoroutineScope.runSquareWave() {
+        val periodMs = (1000.0 / settings.waveFrequencyHz()).toLong().coerceIn(20L, 10000L)
+        val halfPeriod = (periodMs / 2).coerceAtLeast(5L)
+        val timings = longArrayOf(halfPeriod, periodMs - halfPeriod)
+        // A 255-ös erősség biztonságosan kérhető erősségszabályzás nélküli
+        // hardveren is (100%-ra kerekítődik) - lásd VIBRATION_API_RESEARCH.md.
+        val amplitudes = intArrayOf(255, 0)
+        vibrateWaveform(timings, amplitudes, repeat = 0)
+        while (isActive) {
+            delay(500)
+        }
+    }
+
+    // 19. Fűrészfog ("Sawtooth"): lineárisan emelkedik minimumról
+    // maximumra, majd azonnal (interpoláció nélkül) visszaáll minimumra és
+    // kezdi elölről. Technikailag ez megegyezik a "Fokozatos erősödés" (8.)
+    // móddal - egy fűrészfog-hullám pontosan ez: lineáris rámpa, amit a
+    // natív hullámforma-ismétlés (repeat=0) magától azonnali visszaugrással
+    // követ minden ciklus végén, hiszen a lejátszás a 0. indexre tér vissza.
+    // Külön gombként azért szerepel, mert külön kérték a két elnevezéssel.
+    private suspend fun CoroutineScope.runSawtooth() {
+        val hasAmplitude = VibrationCapabilities.buildReport(vibrator).hasAmplitudeControl
+        val (timings, amplitudes) = buildIntensityWaveform(settings.durationMs, hasAmplitude) { t ->
+            0.05f + 0.95f * t
+        }
+        vibrateWaveform(timings, amplitudes, repeat = 0)
+        while (isActive) {
+            delay(500)
+        }
+    }
+
     /**
      * [stepCount] darab, egyenként [stepDurationMs] hosszú, DISZKRÉT
      * szintből épít hullámformát - a szintek közt nincs átmenet/lépcsőzés,
@@ -841,6 +980,12 @@ class VibrationService : Service() {
         MODE_STEPPED_STRENGTHENING -> R.string.mode_stepped_short
         MODE_SUDDEN_SWITCH -> R.string.mode_sudden_switch_short
         MODE_BURST_SERIES -> R.string.mode_burst_series_short
+        MODE_RANDOM_TIMING -> R.string.mode_random_timing_short
+        MODE_RANDOM_INTENSITY -> R.string.mode_random_intensity_short
+        MODE_RANDOM_TIMING_INTENSITY -> R.string.mode_random_timing_intensity_short
+        MODE_SINE -> R.string.mode_sine_short
+        MODE_SQUARE_WAVE -> R.string.mode_square_wave_short
+        MODE_SAWTOOTH -> R.string.mode_sawtooth_short
         else -> R.string.notification_title
     }
 }

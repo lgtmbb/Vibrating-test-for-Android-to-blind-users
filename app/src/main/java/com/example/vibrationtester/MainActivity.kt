@@ -42,6 +42,12 @@ class MainActivity : AppCompatActivity() {
         val btnStepped = findViewById<Button>(R.id.btnStepped)
         val btnSuddenSwitch = findViewById<Button>(R.id.btnSuddenSwitch)
         val btnBurstSeries = findViewById<Button>(R.id.btnBurstSeries)
+        val btnRandomTiming = findViewById<Button>(R.id.btnRandomTiming)
+        val btnRandomIntensity = findViewById<Button>(R.id.btnRandomIntensity)
+        val btnRandomTimingIntensity = findViewById<Button>(R.id.btnRandomTimingIntensity)
+        val btnSine = findViewById<Button>(R.id.btnSine)
+        val btnSquareWave = findViewById<Button>(R.id.btnSquareWave)
+        val btnSawtooth = findViewById<Button>(R.id.btnSawtooth)
         val btnStop = findViewById<Button>(R.id.btnStop)
         val btnSettings = findViewById<Button>(R.id.btnSettings)
         chkKeepAlive = findViewById(R.id.chkKeepAlive)
@@ -95,6 +101,24 @@ class MainActivity : AppCompatActivity() {
         }
         btnBurstSeries.setOnClickListener {
             onModeButtonPressed(VibrationService.MODE_BURST_SERIES, R.string.announce_burst_series)
+        }
+        btnRandomTiming.setOnClickListener {
+            onModeButtonPressed(VibrationService.MODE_RANDOM_TIMING, R.string.announce_random_timing)
+        }
+        btnRandomIntensity.setOnClickListener {
+            onModeButtonPressed(VibrationService.MODE_RANDOM_INTENSITY, R.string.announce_random_intensity)
+        }
+        btnRandomTimingIntensity.setOnClickListener {
+            onModeButtonPressed(VibrationService.MODE_RANDOM_TIMING_INTENSITY, R.string.announce_random_timing_intensity)
+        }
+        btnSine.setOnClickListener {
+            onModeButtonPressed(VibrationService.MODE_SINE, R.string.announce_sine)
+        }
+        btnSquareWave.setOnClickListener {
+            onModeButtonPressed(VibrationService.MODE_SQUARE_WAVE, R.string.announce_square_wave)
+        }
+        btnSawtooth.setOnClickListener {
+            onModeButtonPressed(VibrationService.MODE_SAWTOOTH, R.string.announce_sawtooth)
         }
         btnStop.setOnClickListener {
             stopMode()

@@ -16,6 +16,12 @@
     <string name="mode_stepped_button">11. Lépcsőzetes Erősödés (Stepped)</string>
     <string name="mode_sudden_switch_button">12. Hirtelen Módváltás (Sudden Switch)</string>
     <string name="mode_burst_series_button">13. Burst / Sorozat (Burst Series)</string>
+    <string name="mode_random_timing_button">14. Véletlenszerű Időzítés (Random Timing)</string>
+    <string name="mode_random_intensity_button">15. Véletlenszerű Intenzitás (Random Intensity)</string>
+    <string name="mode_random_timing_intensity_button">16. Véletlenszerű Időzítés + Intenzitás</string>
+    <string name="mode_sine_button">17. Szinuszos (Sine)</string>
+    <string name="mode_square_wave_button">18. Négyszögjel-szerű (Square Wave)</string>
+    <string name="mode_sawtooth_button">19. Fűrészfog (Sawtooth)</string>
     <string name="stop_button">Leállítás</string>
 
     <string name="mode_consistent_short">Állandó mód</string>
@@ -31,6 +37,12 @@
     <string name="mode_stepped_short">Lépcsőzetes erősödés</string>
     <string name="mode_sudden_switch_short">Hirtelen módváltás</string>
     <string name="mode_burst_series_short">Burst sorozat</string>
+    <string name="mode_random_timing_short">Véletlenszerű időzítés</string>
+    <string name="mode_random_intensity_short">Véletlenszerű intenzitás</string>
+    <string name="mode_random_timing_intensity_short">Véletlenszerű időzítés + intenzitás</string>
+    <string name="mode_sine_short">Szinuszos</string>
+    <string name="mode_square_wave_short">Négyszögjel-szerű</string>
+    <string name="mode_sawtooth_short">Fűrészfog</string>
 
     <string name="desc_consistent_button">Állandó Mód gomb. Folyamatos, szünet nélküli rezgést indít.</string>
     <string name="desc_pulsing_button">Pulzáló Mód gomb. Ritmikus, szabályos időközönként ismétlődő rezgést indít.</string>
@@ -45,6 +57,12 @@
     <string name="desc_stepped_button">Lépcsőzetes Erősödés gomb. Az erősség 5 diszkrét szinten emelkedik - minden szint a Beállításokban megadott hosszig tart, majd hirtelen, átmenet nélkül vált a következőre, majd újrakezdi.</string>
     <string name="desc_sudden_switch_button">Hirtelen Módváltás gomb. Folyamatosan rezeg egy állandó erősségen, majd hirtelen, átmenet nélkül átvált egy magasabb erősségre, és ez váltakozik - soha nem áll le teljesen.</string>
     <string name="desc_burst_series_button">Burst / Sorozat gomb. Négy gyors lüktetésből álló csoportokat játszik le, hosszabb csendes szakaszokkal elválasztva - minden csoport pontosan ugyanannyi lüktetést tartalmaz, azonos időzítéssel.</string>
+    <string name="desc_random_timing_button">Véletlenszerű Időzítés gomb. Fix hosszúságú és erősségű lüktetéseket ad, de a köztük lévő szünet minden alkalommal újra véletlenszerű - az időzítés nem követ felismerhető mintát.</string>
+    <string name="desc_random_intensity_button">Véletlenszerű Intenzitás gomb. A rezgés folyamatosan aktív marad, de az erőssége minden fix hosszúságú szakasznál újra véletlenszerű, az időzítéstől függetlenül.</string>
+    <string name="desc_random_timing_intensity_button">Véletlenszerű Időzítés + Intenzitás gomb. Mind a lüktetések közti szünet, mind az erősségük egymástól függetlenül, minden alkalommal újra véletlenszerű - nem ismétlődik fix minta.</string>
+    <string name="desc_sine_button">Szinuszos gomb. Az erősség simán, szinusz-görbe szerint modulálódik, a Beállításokban megadható frekvenciával és lengés-mértékkel.</string>
+    <string name="desc_square_wave_button">Négyszögjel-szerű gomb. Éles, azonnali váltás be és ki között, fix frekvenciával, mint egy négyszögjel.</string>
+    <string name="desc_sawtooth_button">Fűrészfog gomb. Lineárisan emelkedik minimumról maximumra, majd azonnal visszaugrik minimumra és kezdi elölről.</string>
     <string name="desc_stop_button">Leállítás gomb. Az összes folyamatban lévő rezgést azonnal megszakítja.</string>
     <string name="desc_keep_alive_checkbox">Folytatás képernyőzár után. Ha be van jelölve, a rezgés a képernyő lezárása vagy az alkalmazás háttérbe kerülése után is folytatódik, egy értesítés jelzi a futást.</string>
 
@@ -63,6 +81,12 @@
     <string name="announce_stepped">Lépcsőzetes erősödés mód elindítva</string>
     <string name="announce_sudden_switch">Hirtelen módváltás mód elindítva</string>
     <string name="announce_burst_series">Burst sorozat mód elindítva</string>
+    <string name="announce_random_timing">Véletlenszerű időzítés mód elindítva</string>
+    <string name="announce_random_intensity">Véletlenszerű intenzitás mód elindítva</string>
+    <string name="announce_random_timing_intensity">Véletlenszerű időzítés és intenzitás mód elindítva</string>
+    <string name="announce_sine">Szinuszos mód elindítva</string>
+    <string name="announce_square_wave">Négyszögjel-szerű mód elindítva</string>
+    <string name="announce_sawtooth">Fűrészfog mód elindítva</string>
     <string name="announce_stop">Rezgések leállítva</string>
     <string name="announce_keep_alive_on">Képernyőzár utáni folytatás bekapcsolva</string>
     <string name="announce_keep_alive_off">Képernyőzár utáni folytatás kikapcsolva</string>
@@ -71,7 +95,7 @@
     <string name="notification_title">Rezgés Tesztelő aktív</string>
 
     <!-- Settings button on the main screen -->
-    <string name="settings_button">14. Beállítások</string>
+    <string name="settings_button">20. Beállítások</string>
     <string name="desc_settings_button">Beállítások gomb. Megnyitja a rezgés erősségét, hosszát, szünetét és egyéb részleteit szabályozó képernyőt.</string>
     <string name="announce_already_running">Már fut ez a mód, a gomb nem indította újra</string>
 
@@ -125,6 +149,12 @@
     <string name="settings_section_predefined_effect">Melyik előre definiált effektus</string>
     <string name="settings_section_composition">Mely primitívek szerepeljenek az összetett rezgésben</string>
     <string name="composition_description">Legalább egy primitívet ki kell választani. Ha egyik sem elérhető ezen a készüléken, vagy egy sem lett kiválasztva, az alkalmazás csendben visszaesik az egyéni hullámformára.</string>
+
+    <string name="settings_section_wave_frequency">Szinuszos / Négyszögjel-szerű mód frekvenciája</string>
+    <string name="wave_frequency_description">A Szinuszos és a Négyszögjel-szerű mód közös frekvenciája Hz-ben (mennyi teljes ciklus fut másodpercenként).</string>
+    <string name="wave_frequency_value_format">Frekvencia: %1$.1f Hz</string>
+    <string name="sine_amplitude_description">Csak a Szinuszos módot érinti: mekkora legyen az erősség lengésének mértéke a ciklus közepe körül. 100%-nál a lengés a teljes 0-100%-os tartományt bejárja.</string>
+    <string name="sine_amplitude_value_format">Lengés mértéke: %1$d%%</string>
 
     <string name="settings_section_repeat_press">Gomb ismételt megnyomása</string>
     <string name="restart_on_repeat_label">Gomb ismételt megnyomása újraindítja a rezgést</string>

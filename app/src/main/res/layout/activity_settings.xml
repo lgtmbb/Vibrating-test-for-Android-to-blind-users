@@ -175,6 +175,35 @@
                 android:orientation="vertical" />
         </LinearLayout>
 
+        <!-- Sine / Square wave frequency and sine amplitude -->
+        <TextView
+            style="@style/SettingsSectionHeader"
+            android:text="@string/settings_section_wave_frequency" />
+        <TextView
+            style="@style/SettingsDescription"
+            android:text="@string/wave_frequency_description" />
+        <TextView
+            android:id="@+id/lblWaveFrequencyValue"
+            style="@style/SettingsValueLabel" />
+        <SeekBar
+            android:id="@+id/seekWaveFrequency"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="99"
+            android:layout_marginBottom="16dp" />
+        <TextView
+            style="@style/SettingsDescription"
+            android:text="@string/sine_amplitude_description" />
+        <TextView
+            android:id="@+id/lblSineAmplitudeValue"
+            style="@style/SettingsValueLabel" />
+        <SeekBar
+            android:id="@+id/seekSineAmplitude"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="95"
+            android:layout_marginBottom="24dp" />
+
         <!-- Repeat-press behaviour -->
         <TextView
             style="@style/SettingsSectionHeader"

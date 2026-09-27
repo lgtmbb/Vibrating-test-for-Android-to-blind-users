@@ -4,9 +4,19 @@ Android alkalmazás, amely különböző rezgésmintákat játszik le, elsődleg
 felhasználók számára végzett haptikai visszajelzés-tesztekhez. TalkBack-kel
 kompatibilis.
 
+## ⚠ Fontos: ha korábbi verzió van telepítve
+
+A v1.9.0 előtti minden kiadás (v1.0.0-v1.8.0) más-más, ideiglenes
+aláírással készült egy hiba miatt, amit ez a verzió javít (lásd a
+"Csomag-aláírás és telepítési hiba" szakaszt a `VIBRATION_API_RESEARCH.md`-
+ben). Emiatt egy korábbi verzió telepítése után ez (vagy bármely jövőbeli
+verzió) csak úgy telepíthető, ha **előbb teljesen eltávolítod a jelenlegi
+verziót**. Ez egyszeri lépés - utána minden további frissítés
+zökkenőmentesen, eltávolítás nélkül fog menni.
+
 ## Mit csinál a program
 
-Tizenhárom rezgésmintát tud lejátszani, és bármelyik leállítható a
+Tizenkilenc rezgésmintát tud lejátszani, és bármelyik leállítható a
 Leállítás gombbal:
 
 1. **Állandó mód** – folyamatos, gyakorlatilag szünet nélküli rezgés,
@@ -37,6 +47,17 @@ Leállítás gombbal:
     másik, magasabb erősségre vált, sosem áll le teljesen.
 13. **Burst / sorozat** *(új)* – 4 gyors lüktetésből álló csoportok,
     hosszabb csendekkel elválasztva, minden csoport azonos.
+14. **Véletlenszerű időzítés** *(új)* – fix lüktetések, véletlenszerű
+    köztes szünettel.
+15. **Véletlenszerű intenzitás** *(új)* – folyamatosan aktív rezgés,
+    véletlenszerűen ingadozó erősséggel.
+16. **Véletlenszerű időzítés + intenzitás** *(új)* – mindkét tengely
+    egymástól függetlenül véletlenszerű.
+17. **Szinuszos** *(új)* – szinusz-görbe szerinti erősség-moduláció,
+    állítható frekvenciával és lengés-mértékkel.
+18. **Négyszögjel-szerű** *(új)* – éles BE/KI váltás fix frekvenciával.
+19. **Fűrészfog** *(új)* – lineáris rámpa, azonnali visszaugrással
+    (technikailag azonos a Fokozatos erősödéssel - lásd lent).
 
 Minden gombhoz `contentDescription` tartozik, ezért TalkBack alatt a gomb
 látható felirata helyett a hosszabb, cselekvést leíró szöveg hangzik el (ez a
@@ -152,6 +173,32 @@ Mivel `createWaveform` egymást követő, nem-nulla amplitúdójú szegmensei
 között nincs kényszerű szünet, a lépcsőzős/váltós módoknál nincs szükség a
 rámpáknál használt apró lépésekre - elég annyi szegmens, ahány szint van,
 mindegyik a teljes szint-időtartamra állítva.
+
+## Hat új mód: Véletlenszerű időzítés/intenzitás, Szinuszos, Négyszögjel-szerű, Fűrészfog
+
+A Véletlenszerű időzítés, Véletlenszerű intenzitás és Véletlenszerű
+időzítés+intenzitás mód a Kiszámíthatatlan mód (5.) egyszerűsített,
+egystratégiás megfelelői - nem váltanak stratégiák/ízek között és nem
+alkalmaznak ismétlődés-elkerülést, mindegyik kifejezetten egyetlen
+tengelyt (időzítés, erősség, vagy mindkettő) tesz véletlenszerűvé.
+
+A Szinuszos és a Négyszögjel-szerű mód egy közös, új Hz-alapú frekvencia-
+beállítást kapott a Beállítások képernyőn; a Szinuszos mód emellett egy
+külön "lengés mértéke" csúszkát is.
+
+**Átláthatóság**: három új mód technikailag jelentősen átfed egy már
+meglévővel - ezt nem hallgatjuk el:
+- **Szinuszos ≈ Hullámzó intenzitás (10.)** - a különbség a Hz-alapú,
+  külön állítható frekvencia és lengés-mérték.
+- **Négyszögjel-szerű ≈ Pulzáló mód (2.)** - a különbség a szimmetrikus
+  (50%-os), Hz-ből számolt kitöltési tényező a Pulzáló mód tetszőlegesen
+  aszimmetrikus hossz/szünet párosával szemben.
+- **Fűrészfog ≈ Fokozatos erősödés (8.)** - ez a kettő **funkcionálisan
+  azonos**: egy fűrészfog-hullám definíció szerint pontosan az, amit a
+  natív hullámforma-ismétlés (`repeat=0`) már ad a lineáris rámpának.
+  Külön gombként azért szerepel, mert külön kérték, két névvel.
+
+Részletek: `VIBRATION_API_RESEARCH.md`.
 
 ## Amit hozzáadtam: "Folytatás képernyőzár után is" jelölőnégyzet
 

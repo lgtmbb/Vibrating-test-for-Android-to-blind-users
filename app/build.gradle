@@ -15,8 +15,28 @@ android {
         applicationId "com.example.vibrationtester"
         minSdk 24
         targetSdk 34
-        versionCode 9
-        versionName "1.8.0"
+        versionCode 10
+        versionName "1.9.0"
+    }
+
+    // KRITIKUS: enélkül minden egyes GitHub Actions futás egy vadonatúj,
+    // ideiglenes debug-kulcsot generált volna (mert a friss futtatógépen
+    // nincs korábbi ~/.android/debug.keystore), így minden kiadott apk más
+    // aláírással rendelkezett. Emiatt egy már telepített korábbi verzióra
+    // egy újabbat telepíteni "az alkalmazás nincs telepítve" hibával
+    // elutasította a rendszer, "mégis telepítés" lehetőség nélkül - ez nem
+    // Play Protect figyelmeztetés, hanem alapvető aláírás-ütközés. A
+    // "debug" nevű signingConfig felülírja az AGP beépített, alapértelmezett
+    // debug-aláírását egy a repóban tárolt, állandó kulccsal (app/debug.keystore),
+    // így minden jövőbeli build ugyanazzal az aláírással készül, és a
+    // frissítések zökkenőmentesen települnek egymásra.
+    signingConfigs {
+        debug {
+            storeFile file('debug.keystore')
+            storePassword 'android'
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+        }
     }
 
     buildTypes {

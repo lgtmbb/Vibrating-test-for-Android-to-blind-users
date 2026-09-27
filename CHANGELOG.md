@@ -5,6 +5,47 @@ egy .zip-be csomagolt fájlból állt, teljes build-rendszer nélkül. Ez a
 verzió az első, ami tényleges, lefordítható Android Studio projektként van
 strukturálva.
 
+## [1.9.0]
+
+### JAVÍTVA - kritikus telepítési hiba
+- **A `debug` build-típusnak eddig nem volt állandó aláíró kulcsa**, ezért
+  minden GitHub Actions futás egy vadonatúj, ideiglenes debug-kulcsot
+  generált (mert a friss futtatógépen sosem létezett korábbi
+  `~/.android/debug.keystore`). Emiatt a v1.0.0-tól v1.8.0-ig minden
+  kiadott apk más-más aláírással rendelkezett, ami "az alkalmazás nincs
+  telepítve" hibát okozott egy korábbi verzióra telepítéskor, "mégis
+  telepítés" lehetőség nélkül (ez alapvető aláírás-ütközés, nem Play
+  Protect figyelmeztetés). Mostantól egy állandó, a repóba mentett
+  debug-kulcs (`app/debug.keystore`) van beállítva - lásd
+  `VIBRATION_API_RESEARCH.md` új szakaszát a teljes diagnózisért.
+  **Egyszeri teendő**: a jelenleg telepített verziót egyszer el kell
+  távolítani, utána minden további frissítés zökkenőmentes lesz.
+
+### Hozzáadva
+- **Hat új mód**:
+  - **14. Véletlenszerű időzítés**: fix hosszúságú és erősségű
+    lüktetések, csak a köztük lévő szünet véletlenszerű minden alkalommal.
+  - **15. Véletlenszerű intenzitás**: folyamatosan aktív rezgés, aminek
+    csak az erőssége véletlenszerű szegmensenként, az időzítéstől
+    függetlenül.
+  - **16. Véletlenszerű időzítés + intenzitás**: mindkét tengely
+    egymástól függetlenül, minden alkalommal újra véletlenszerű - a
+    Kiszámíthatatlan mód egyszerűsített, egystratégiás megfelelője.
+  - **17. Szinuszos**: szinusz-görbe szerinti erősség-moduláció, új,
+    Hz-ben megadható frekvencia- és lengés-mérték beállítással.
+  - **18. Négyszögjel-szerű**: éles BE/KI váltás fix frekvenciával,
+    50%-os kitöltési tényezővel - ugyanazt a frekvencia-beállítást
+    használja, mint a Szinuszos mód.
+  - **19. Fűrészfog**: lineáris rámpa minimumtól maximumig, azonnali
+    visszaugrással - technikailag azonos a "Fokozatos erősödés" móddal.
+- Két új Beállítás: "Szinuszos / Négyszögjel-szerű mód frekvenciája"
+  (0.1-10.0 Hz) és "Lengés mértéke" (5-100%, csak Szinuszos módhoz).
+- `VIBRATION_API_RESEARCH.md` kiegészítve egy átláthatósági szakasszal a
+  három új mód és a meglévő módok közti technikai átfedésekről.
+
+### Változott
+- A gombok újraszámozva 1-19-ig, majd Leállítás, majd 20. Beállítások.
+
 ## [1.8.0]
 
 ### Hozzáadva

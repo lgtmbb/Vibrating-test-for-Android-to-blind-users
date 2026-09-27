@@ -43,6 +43,10 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var panelComposition: LinearLayout
     private lateinit var radioPredefinedEffects: RadioGroup
     private lateinit var containerPrimitives: LinearLayout
+    private lateinit var seekWaveFrequency: SeekBar
+    private lateinit var lblWaveFrequencyValue: TextView
+    private lateinit var seekSineAmplitude: SeekBar
+    private lateinit var lblSineAmplitudeValue: TextView
     private lateinit var chkRestartOnRepeatPress: CheckBox
 
     // Egyszerű flag, ami elnyomja a callback-eket a mezők kezdeti feltöltése
@@ -68,6 +72,7 @@ class SettingsActivity : AppCompatActivity() {
         populateDurationAndPause()
         populateUnpredictability()
         populateVibrationTypeSection()
+        populateWaveFrequencySection()
         populateRepeatPressSection()
     }
 
@@ -84,6 +89,10 @@ class SettingsActivity : AppCompatActivity() {
         panelComposition = findViewById(R.id.panelComposition)
         radioPredefinedEffects = findViewById(R.id.radioPredefinedEffects)
         containerPrimitives = findViewById(R.id.containerPrimitives)
+        seekWaveFrequency = findViewById(R.id.seekWaveFrequency)
+        lblWaveFrequencyValue = findViewById(R.id.lblWaveFrequencyValue)
+        seekSineAmplitude = findViewById(R.id.seekSineAmplitude)
+        lblSineAmplitudeValue = findViewById(R.id.lblSineAmplitudeValue)
         chkRestartOnRepeatPress = findViewById(R.id.chkRestartOnRepeatPress)
     }
 
@@ -319,6 +328,41 @@ class SettingsActivity : AppCompatActivity() {
             if (cb.isChecked) (cb.tag as? Int)?.let { selected.add(it) }
         }
         settings.selectedPrimitiveIds = selected
+    }
+
+    // --- Sine / Square wave frequency and sine amplitude ---------------------
+
+    private fun populateWaveFrequencySection() {
+        seekWaveFrequency.progress = settings.waveFrequencyTenthsHz - 1
+        updateWaveFrequencyLabel()
+        seekWaveFrequency.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                updateWaveFrequencyLabel()
+                if (fromUser) settings.waveFrequencyTenthsHz = progress + 1
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+
+        seekSineAmplitude.progress = settings.sineAmplitudePercent - 5
+        updateSineAmplitudeLabel()
+        seekSineAmplitude.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                updateSineAmplitudeLabel()
+                if (fromUser) settings.sineAmplitudePercent = progress + 5
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+    }
+
+    private fun updateWaveFrequencyLabel() {
+        val hz = (seekWaveFrequency.progress + 1) / 10.0
+        lblWaveFrequencyValue.text = getString(R.string.wave_frequency_value_format, hz)
+    }
+
+    private fun updateSineAmplitudeLabel() {
+        lblSineAmplitudeValue.text = getString(R.string.sine_amplitude_value_format, seekSineAmplitude.progress + 5)
     }
 
     // --- Repeat-press behaviour ----------------------------------------------
