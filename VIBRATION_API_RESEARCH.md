@@ -158,6 +158,44 @@ támaszkodunk.
 - Forrás: [Create custom haptic effects - Vibration waveform with envelopes](https://developer.android.com/develop/ui/views/haptics/custom-haptic-effects#vibration-waveform-with-envelopes),
   [Implement piecewise linear envelope effects (AOSP)](https://source.android.com/docs/core/interaction/haptics/haptics-pwle)
 
+## Samsung (S25): "az intenzitás nem állítható" - diagnózis és javítás
+
+**Tünet**: Samsung Galaxy S25-ön az erősség nem volt állítható.
+
+**Dokumentált okok, amiket a kód mostantól kezel** (a tényleges S25-ös
+viselkedést innen, eszköz nélkül nem tudtam kipróbálni - ezért nem egyetlen
+találgatott javítás, hanem választható módszerek kerültek be):
+- **A kapcsoló le volt tiltva.** A Beállítások csak akkor engedte az
+  egyéni erősséget, ha `Vibrator.hasAmplitudeControl()` igazat adott. Ha
+  egy készülék (a Samsung-fórumokon és az Android-dokumentációban is
+  szereplő eszközöknél előfordul) hamisat jelent, a vezérlő szürke maradt.
+  Most mindig elérhető.
+- **Az `AUTO` mód csendben kitöltési tényezőre váltott**, ha a hardver
+  nem jelzett amplitúdó-támogatást - ez ott is gyenge/azonos érzetet adott,
+  ahol a motor valójában követi az amplitúdót. Új "Intenzitás-módszer":
+  Automatikus / Amplitúdó kényszerítve / Kitöltési tényező (on/off arány).
+  Az utolsó minden hardveren érezhető, mert nem az amplitúdó-támogatásra
+  épül; a kényszerített amplitúdó pedig kipróbálható akkor is, ha a
+  készülék rosszul jelent. Az explicit erősségű `createOneShot` hívások
+  is kitöltési tényezős emulációra váltanak, ha az amplitúdó-mód ki van
+  kapcsolva (20ms-es periódus, on/off arány = kért erősség).
+- **Rendszer-szintű skálázás.** Az Android a felhasználó "Rezgés
+  erőssége" beállításai (hívás / értesítés / érintés / média) szerint
+  skálázza az app rezgését a `VibrationAttributes`/`AudioAttributes`
+  felhasználási osztály alapján; alacsony beállításnál az amplitúdó-
+  különbségek összenyomódnak. Az app addig nem adott meg osztályt. Új
+  Beállítás: "Rezgés felhasználási osztálya" (Ébresztő alapértelmezett,
+  Kisegítő lehetőségek, Értesítés, Érintés, Média, Nincs megadva), és
+  minden rezgés ezen keresztül (`play()`) szól.
+- **Háttér/képernyőzár.** Az Android haptika-dokumentációja szerint a
+  `VibrationAttributes` háttérből indított rezgésnél kötelező, mert háttérben
+  csak "figyelemfelkeltő" rezgés támogatott - ez a lezárt képernyős hibát is
+  magyarázhatja. Az alapértelmezett Ébresztő osztály ezt fedi.
+
+Forrás: [Android haptics API reference](https://developer.android.com/develop/ui/views/haptics/haptics-apis),
+[VibrationAttributes](https://developer.android.com/reference/android/os/VibrationAttributes),
+[Samsung Developer Forum: hasAmplitudeControl, createWaveform](https://forum.developer.samsung.com/t/hasamplitudecontrol-createwaveform-api/30327)
+
 ## Csomag-aláírás és telepítési hiba - kritikus javítás
 
 Ez a szakasz nem rezgés-API-kutatás, hanem egy súlyos, a projekt
@@ -334,6 +372,15 @@ elhallgatva dokumentáljuk:
   azonnali, interpoláció nélküli visszaugrással zár le minden ciklus
   végén. Nem volt mit technikailag hozzátenni - külön gombként azért
   szerepel, mert külön kérték, két különböző névvel.
+
+## Wake lock időkorlát és gyorsulásmérő
+
+- A wake lock korábban 30 perces `acquire(timeout)`-tal futott; lejárta után
+  az időzítés-alapú módok lezárt képernyőnél elakadhattak. Most
+  időkorlát nélküli, minden leállítási úton felszabadul.
+- A "Mozgásra reagáló" mód a `SensorManager`/`TYPE_ACCELEROMETER`
+  eltérését használja a gravitációtól (`GRAVITY_EARTH`); külön jogosultság
+  nem kell hozzá. Forrás: [Motion sensors](https://developer.android.com/develop/sensors-and-location/sensors/sensors_motion)
 
 ## Fő hivatkozások
 

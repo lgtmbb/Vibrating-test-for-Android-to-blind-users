@@ -258,8 +258,41 @@
             android:textSize="18sp"
             android:backgroundTint="#333333"
             android:textColor="#FFFFFF"
-            android:layout_marginBottom="32dp"
+            android:layout_marginBottom="16dp"
             android:contentDescription="@string/desc_sawtooth_button" />
+
+        <Button
+            android:id="@+id/btnTriangle"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:text="@string/mode_triangle_button"
+            android:textSize="18sp"
+            android:backgroundTint="#333333"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="16dp"
+            android:contentDescription="@string/desc_triangle_button" />
+
+        <Button
+            android:id="@+id/btnDualRhythm"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:text="@string/mode_dual_rhythm_button"
+            android:textSize="18sp"
+            android:backgroundTint="#333333"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="16dp"
+            android:contentDescription="@string/desc_dual_rhythm_button" />
+
+        <Button
+            android:id="@+id/btnMotionResponsive"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:text="@string/mode_motion_responsive_button"
+            android:textSize="18sp"
+            android:backgroundTint="#333333"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="32dp"
+            android:contentDescription="@string/desc_motion_responsive_button" />
 
         <!-- Stop Button -->
         <Button

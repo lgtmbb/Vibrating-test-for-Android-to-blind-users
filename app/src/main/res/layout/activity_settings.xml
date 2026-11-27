@@ -175,6 +175,88 @@
                 android:orientation="vertical" />
         </LinearLayout>
 
+        <!-- Intensity method -->
+        <TextView
+            style="@style/SettingsSectionHeader"
+            android:text="@string/settings_section_intensity_method" />
+        <TextView
+            style="@style/SettingsDescription"
+            android:text="@string/intensity_method_description" />
+        <RadioGroup
+            android:id="@+id/radioIntensityMethod"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp">
+            <RadioButton
+                android:id="@+id/radioMethodAuto"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/method_auto"
+                android:textColor="#FFFFFF" />
+            <RadioButton
+                android:id="@+id/radioMethodAmplitude"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/method_amplitude"
+                android:textColor="#FFFFFF" />
+            <RadioButton
+                android:id="@+id/radioMethodDuty"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/method_duty"
+                android:textColor="#FFFFFF" />
+        </RadioGroup>
+
+        <!-- Vibration usage class -->
+        <TextView
+            style="@style/SettingsSectionHeader"
+            android:text="@string/settings_section_usage" />
+        <TextView
+            style="@style/SettingsDescription"
+            android:text="@string/usage_description" />
+        <RadioGroup
+            android:id="@+id/radioVibrationUsage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp">
+            <RadioButton
+                android:id="@+id/radioUsageAlarm"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/usage_alarm"
+                android:textColor="#FFFFFF" />
+            <RadioButton
+                android:id="@+id/radioUsageAccessibility"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/usage_accessibility"
+                android:textColor="#FFFFFF" />
+            <RadioButton
+                android:id="@+id/radioUsageNotification"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/usage_notification"
+                android:textColor="#FFFFFF" />
+            <RadioButton
+                android:id="@+id/radioUsageTouch"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/usage_touch"
+                android:textColor="#FFFFFF" />
+            <RadioButton
+                android:id="@+id/radioUsageMedia"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/usage_media"
+                android:textColor="#FFFFFF" />
+            <RadioButton
+                android:id="@+id/radioUsageUnknown"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/usage_unknown"
+                android:textColor="#FFFFFF" />
+        </RadioGroup>
+
         <!-- Sine / Square wave frequency and sine amplitude -->
         <TextView
             style="@style/SettingsSectionHeader"

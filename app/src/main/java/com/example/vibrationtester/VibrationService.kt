@@ -8,6 +8,10 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
@@ -70,12 +74,13 @@ class VibrationService : Service() {
         const val MODE_SINE = 16
         const val MODE_SQUARE_WAVE = 17
         const val MODE_SAWTOOTH = 18
+        const val MODE_TRIANGLE = 19
+        const val MODE_DUAL_RHYTHM = 20
+        const val MODE_MOTION_RESPONSIVE = 21
 
         private const val CHANNEL_ID = "vibration_service_channel"
         private const val NOTIFICATION_ID = 1
         private const val WAKE_LOCK_TAG = "VibrationTester:VibrationWakeLock"
-        // Safety cap so a forgotten notification can't hold a wake lock forever.
-        private const val WAKE_LOCK_TIMEOUT_MS = 30L * 60L * 1000L
 
         // Melyik mód fut éppen (null = nincs). A MainActivity ezt olvassa ki,
         // hogy el tudja dönteni: egy gombnyomás új indítás-e, vagy egy már
@@ -91,6 +96,35 @@ class VibrationService : Service() {
     private var patternJob: Job? = null
     private var wakeLock: PowerManager.WakeLock? = null
     private var isPromotedToForeground = false
+
+    // Az éppen futó mód erősség-kezelése: true = valódi amplitúdót kérünk,
+    // false = a kitöltési tényezőt (on/off arányt) moduláljuk. A
+    // startPattern() számolja újra a Beállítások "Intenzitás-módszer"
+    // értéke és az észlelt hardver-képesség alapján.
+    @Volatile
+    private var amplitudeMode: Boolean = true
+
+    // A mozgásra reagáló mód által használt, a szenzor-szálról frissített,
+    // a coroutine-ciklus által kiolvasott érték: 0.0 = teljes nyugalom,
+    // 1.0 = erős rázás/mozgatás.
+    @Volatile
+    private var motionIntensity: Float = 0f
+
+    private val motionSensorListener = object : SensorEventListener {
+        override fun onSensorChanged(event: SensorEvent) {
+            val magnitude = kotlin.math.sqrt(
+                event.values[0] * event.values[0] +
+                    event.values[1] * event.values[1] +
+                    event.values[2] * event.values[2]
+            )
+            // Nyugalomban a gyorsulásmérő a gravitációt (kb. 9,81 m/s^2)
+            // méri; az ettől való ELTÉRÉS a tényleges mozgás mértéke.
+            val deviation = kotlin.math.abs(magnitude - SensorManager.GRAVITY_EARTH)
+            motionIntensity = (deviation / 15f).coerceIn(0f, 1f)
+        }
+
+        override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+    }
 
     override fun onCreate() {
         super.onCreate()
@@ -198,12 +232,18 @@ class VibrationService : Service() {
     // once the screen is off; a partial wake lock keeps the CPU awake so the
     // pattern loop keeps its timing.
 
+    // A wake lock szándékosan NINCS időkorláthoz kötve (korábban 30 perces
+    // acquire(timeout) volt): egy ilyen határidő lezárt képernyő mellett,
+    // hosszabb futás után csendben elengedte volna a CPU-t, és az idő-
+    // alapú (delay()-es) módok elakadtak volna. A felszabadítás minden
+    // leállítási úton (Leállítás gomb, értesítés gombja, onDestroy)
+    // garantáltan megtörténik.
     private fun acquireWakeLock() {
         if (wakeLock == null) {
             val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
             wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, WAKE_LOCK_TAG).apply {
                 setReferenceCounted(false)
-                acquire(WAKE_LOCK_TIMEOUT_MS)
+                acquire()
             }
         }
     }
@@ -215,8 +255,16 @@ class VibrationService : Service() {
 
     // --- Vibration patterns -------------------------------------------------
 
+    private fun amplitudeModeEnabled(): Boolean = when (settings.intensityMethod) {
+        VibrationSettings.IntensityMethod.AMPLITUDE -> true
+        VibrationSettings.IntensityMethod.DUTY_CYCLE -> false
+        VibrationSettings.IntensityMethod.AUTO ->
+            VibrationCapabilities.buildReport(vibrator).hasAmplitudeControl
+    }
+
     private fun startPattern(mode: Int) {
         stopPattern()
+        amplitudeMode = amplitudeModeEnabled()
         patternJob = scope.launch {
             when (mode) {
                 MODE_CONSISTENT -> runConsistent()
@@ -238,6 +286,9 @@ class VibrationService : Service() {
                 MODE_SINE -> runSine()
                 MODE_SQUARE_WAVE -> runSquareWave()
                 MODE_SAWTOOTH -> runSawtooth()
+                MODE_TRIANGLE -> runTriangle()
+                MODE_DUAL_RHYTHM -> runDualRhythm()
+                MODE_MOTION_RESPONSIVE -> runMotionResponsive()
             }
         }
     }
@@ -350,7 +401,7 @@ class VibrationService : Service() {
     // Android 10-en nem ellenőrizhetőnek) jelez az adott készüléken.
     private suspend fun CoroutineScope.runTrulyRandom() {
         val report = VibrationCapabilities.buildReport(vibrator)
-        val hasAmplitude = report.hasAmplitudeControl
+        val hasAmplitude = amplitudeMode
         val predefinedCandidates = report.predefinedEffects
             .filter { it.support != VibrationCapabilities.Support.NO }
             .map { it.id }
@@ -453,7 +504,7 @@ class VibrationService : Service() {
 
         while (isActive) {
             if (useHeavyClick) {
-                vibrator.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_HEAVY_CLICK))
+                play(VibrationEffect.createPredefined(VibrationEffect.EFFECT_HEAVY_CLICK))
                 delay(Random.nextLong(70L, 100L))
             } else {
                 val duration = Random.nextLong(120L, 180L)
@@ -507,7 +558,7 @@ class VibrationService : Service() {
     // intenzitásról indulva, a "Rezgés hossza" beállítás alatt folyamatosan
     // és fokozatosan erősödik a maximumig, majd újrakezdi.
     private suspend fun CoroutineScope.runRampUp() {
-        val hasAmplitude = VibrationCapabilities.buildReport(vibrator).hasAmplitudeControl
+        val hasAmplitude = amplitudeMode
         val (timings, amplitudes) = buildIntensityWaveform(settings.durationMs, hasAmplitude) { t ->
             0.1f + 0.9f * t
         }
@@ -522,7 +573,7 @@ class VibrationService : Service() {
     // maximumról) indulva fokozatosan csökken majdnem nulláig, majd
     // újrakezdi.
     private suspend fun CoroutineScope.runRampDown() {
-        val hasAmplitude = VibrationCapabilities.buildReport(vibrator).hasAmplitudeControl
+        val hasAmplitude = amplitudeMode
         val startAmplitude = settings.effectiveAmplitude().let {
             if (it == VibrationEffect.DEFAULT_AMPLITUDE) 255 else it
         }
@@ -540,7 +591,7 @@ class VibrationService : Service() {
     // folyamatosan, simán hullámzik fel-le, szinusz-görbe szerint, fix
     // ciklushosszal (a "Rezgés hossza" beállítás egy teljes ciklus hossza).
     private suspend fun CoroutineScope.runWave() {
-        val hasAmplitude = VibrationCapabilities.buildReport(vibrator).hasAmplitudeControl
+        val hasAmplitude = amplitudeMode
         val (timings, amplitudes) = buildIntensityWaveform(settings.durationMs, hasAmplitude) { t ->
             val normalized = (kotlin.math.sin(2.0 * Math.PI * t) + 1.0) / 2.0 // 0..1
             (0.15 + 0.85 * normalized).toFloat()
@@ -558,7 +609,7 @@ class VibrationService : Service() {
     // módtól, ami sima, folytonos átmenetet közelít apró lépésekkel - itt
     // pont az a lényeg, hogy a szintek közti váltás érezhetően éles legyen.
     private suspend fun CoroutineScope.runSteppedStrengthening() {
-        val hasAmplitude = VibrationCapabilities.buildReport(vibrator).hasAmplitudeControl
+        val hasAmplitude = amplitudeMode
         val stepCount = 5
         val (timings, amplitudes) = buildSteppedWaveform(settings.durationMs, stepCount, hasAmplitude) { i ->
             (i + 1).toFloat() / stepCount
@@ -575,7 +626,7 @@ class VibrationService : Service() {
     // teljesen (ellentétben pl. a Pulzáló móddal, ami ki/be kapcsol). A
     // két szint mindegyike a "Rezgés hossza" ideig tart.
     private suspend fun CoroutineScope.runSuddenSwitch() {
-        val hasAmplitude = VibrationCapabilities.buildReport(vibrator).hasAmplitudeControl
+        val hasAmplitude = amplitudeMode
         val (timings, amplitudes) = buildSteppedWaveform(settings.durationMs, 2, hasAmplitude) { i ->
             if (i == 0) 0.4f else 1.0f
         }
@@ -648,7 +699,7 @@ class VibrationService : Service() {
     // erősség véletlenszerű minden egyes, fix hosszúságú szegmensnél - az
     // időzítéstől függetlenül.
     private suspend fun CoroutineScope.runRandomIntensity() {
-        val hasAmplitude = VibrationCapabilities.buildReport(vibrator).hasAmplitudeControl
+        val hasAmplitude = amplitudeMode
         val segmentMs = 150L
         while (isActive) {
             if (hasAmplitude) {
@@ -674,7 +725,7 @@ class VibrationService : Service() {
     // egystratégiás, ismétlődés-elkerülés nélküli megfelelője, kifejezetten
     // erre a két tengelyre (időzítés + erősség) szűkítve.
     private suspend fun CoroutineScope.runRandomTimingAndIntensity() {
-        val hasAmplitude = VibrationCapabilities.buildReport(vibrator).hasAmplitudeControl
+        val hasAmplitude = amplitudeMode
         while (isActive) {
             val duration = Random.nextLong(50L, 1200L)
             val amplitude = if (hasAmplitude) Random.nextInt(1, 256) else VibrationEffect.DEFAULT_AMPLITUDE
@@ -698,7 +749,7 @@ class VibrationService : Service() {
     // Hz-ben kifejezett frekvencia és külön állítható lengés-mérték a
     // vezérlő paraméter.
     private suspend fun CoroutineScope.runSine() {
-        val hasAmplitude = VibrationCapabilities.buildReport(vibrator).hasAmplitudeControl
+        val hasAmplitude = amplitudeMode
         val cycleDurationMs = (1000.0 / settings.waveFrequencyHz()).toLong().coerceIn(50L, 10000L)
         val swing = settings.sineAmplitudePercent / 100f
         val (timings, amplitudes) = buildIntensityWaveform(cycleDurationMs, hasAmplitude) { t ->
@@ -735,13 +786,95 @@ class VibrationService : Service() {
     // követ minden ciklus végén, hiszen a lejátszás a 0. indexre tér vissza.
     // Külön gombként azért szerepel, mert külön kérték a két elnevezéssel.
     private suspend fun CoroutineScope.runSawtooth() {
-        val hasAmplitude = VibrationCapabilities.buildReport(vibrator).hasAmplitudeControl
+        val hasAmplitude = amplitudeMode
         val (timings, amplitudes) = buildIntensityWaveform(settings.durationMs, hasAmplitude) { t ->
             0.05f + 0.95f * t
         }
         vibrateWaveform(timings, amplitudes, repeat = 0)
         while (isActive) {
             delay(500)
+        }
+    }
+
+    // 20. Háromszög ("Triangle"): lineárisan emelkedik minimumról
+    // maximumra, majd lineárisan csökken vissza, folyamatosan ismételve.
+    // Ellentétben a Fűrészfoggal NINCS hirtelen visszaugrás: a ciklus
+    // szimmetrikus. A "Rezgés hossza" a teljes fel-le ciklus hossza.
+    private suspend fun CoroutineScope.runTriangle() {
+        val hasAmplitude = amplitudeMode
+        val (timings, amplitudes) = buildIntensityWaveform(settings.durationMs, hasAmplitude) { t ->
+            val triangle = if (t < 0.5f) t * 2f else (1f - t) * 2f // 0 -> 1 -> 0
+            0.05f + 0.95f * triangle
+        }
+        vibrateWaveform(timings, amplitudes, repeat = 0)
+        while (isActive) {
+            delay(500)
+        }
+    }
+
+    // 21. Kettős ritmus ("Dual Rhythm"): gyors, MINDIG azonos lüktetések
+    // egy lassabb, 3 szintű ciklusba ágyazva; a lassú ciklus az
+    // összesített erősséget változtatja. Amplitúdó nélkül a lüktetések
+    // alakja (60ms) marad azonos, csak a köztük lévő rés nő a gyengébb
+    // szinteken. A "Rezgés hossza" a teljes lassú ciklus hossza.
+    private suspend fun CoroutineScope.runDualRhythm() {
+        val hasAmplitude = amplitudeMode
+        val pulseOnMs = 60L
+        val levels = listOf(0.3f, 1.0f, 0.6f)
+        val levelDurationMs = (settings.durationMs / levels.size).coerceAtLeast(200L)
+
+        val timingsList = ArrayList<Long>()
+        val amplitudesList = ArrayList<Int>()
+        for (level in levels) {
+            val clamped = level.coerceIn(0.05f, 1f)
+            val amp = (clamped * 254 + 1).toInt().coerceIn(1, 255)
+            val pulseOffMs = if (hasAmplitude) 60L else (40L + 260L * (1f - clamped)).toLong()
+            var elapsed = 0L
+            while (elapsed < levelDurationMs) {
+                timingsList.add(pulseOnMs)
+                amplitudesList.add(if (hasAmplitude) amp else 255)
+                timingsList.add(pulseOffMs)
+                amplitudesList.add(0)
+                elapsed += pulseOnMs + pulseOffMs
+            }
+        }
+        vibrateWaveform(timingsList.toLongArray(), amplitudesList.toIntArray(), repeat = 0)
+        while (isActive) {
+            delay(500)
+        }
+    }
+
+    // 22. Mozgásra reagáló ("Motion-Responsive"): a rezgés erőssége és
+    // hossza valós időben követi a készülék TÉNYLEGES mozgását
+    // (gyorsulásmérő). Külön jogosultság nem kell hozzá. Gyorsulásmérő
+    // nélkül fix, közepes pulzálásra esik vissza.
+    private suspend fun CoroutineScope.runMotionResponsive() {
+        val hasAmplitude = amplitudeMode
+        val sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        val accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+
+        if (accelerometer == null) {
+            while (isActive) {
+                vibrateOneShot(150L, if (hasAmplitude) 150 else VibrationEffect.DEFAULT_AMPLITUDE)
+                delay(400L)
+            }
+            return
+        }
+
+        motionIntensity = 0f
+        sensorManager.registerListener(motionSensorListener, accelerometer, SensorManager.SENSOR_DELAY_GAME)
+        try {
+            while (isActive) {
+                val intensity = motionIntensity
+                if (intensity > 0.05f) {
+                    val duration = (30L + 120L * intensity).toLong()
+                    vibrateOneShot(duration, (intensity * 254 + 1).toInt().coerceIn(1, 255))
+                }
+                delay(90L)
+            }
+        } finally {
+            // A finally lefut a Leállítás okozta megszakításkor is.
+            sensorManager.unregisterListener(motionSensorListener)
         }
     }
 
@@ -879,7 +1012,7 @@ class VibrationService : Service() {
             }
             TrulyRandomFlavor.PREDEFINED -> {
                 val effectId = predefinedPicker!!.pick()
-                vibrator.vibrate(VibrationEffect.createPredefined(effectId))
+                play(VibrationEffect.createPredefined(effectId))
                 Random.nextLong(60L, 400L)
             }
             TrulyRandomFlavor.COMPOSITION -> {
@@ -891,7 +1024,7 @@ class VibrationService : Service() {
                     val primitiveDelay = if (i == 0) 0 else Random.nextInt(0, 80)
                     composition.addPrimitive(primitiveId, scale, primitiveDelay)
                 }
-                vibrator.vibrate(composition.compose())
+                play(composition.compose())
                 Random.nextLong(80L, 400L)
             }
             TrulyRandomFlavor.ENVELOPE -> {
@@ -912,15 +1045,31 @@ class VibrationService : Service() {
                 val closingDuration = Random.nextLong(40L, 150L)
                 builder.addControlPoint(0f, closingSharpness, closingDuration)
                 total += closingDuration
-                vibrator.vibrate(builder.build())
+                play(builder.build())
                 total
             }
         }
     }
 
+    // Minden VibrationEffect-et ezen keresztül játszunk le, hogy a
+    // Beállításokban választott "felhasználási osztály" (AudioAttributes
+    // usage) mindenhol érvényesüljön: a rendszer ez alapján skálázza a
+    // rezgést a felhasználó rendszer-szintű rezgéserősség-beállításaival,
+    // és a háttérből indított rezgést is csak figyelemfelkeltő osztállyal
+    // engedi (lásd VIBRATION_API_RESEARCH.md).
+    @Suppress("DEPRECATION")
+    private fun play(effect: VibrationEffect) {
+        val attrs = settings.vibrationUsage.toAudioAttributes()
+        if (attrs != null) {
+            vibrator.vibrate(effect, attrs)
+        } else {
+            vibrator.vibrate(effect)
+        }
+    }
+
     private fun vibrateWaveform(timings: LongArray, amplitudes: IntArray, repeat: Int = -1) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            vibrator.vibrate(VibrationEffect.createWaveform(timings, amplitudes, repeat))
+            play(VibrationEffect.createWaveform(timings, amplitudes, repeat))
         } else {
             @Suppress("DEPRECATION")
             vibrator.vibrate(timings, repeat)
@@ -938,7 +1087,7 @@ class VibrationService : Service() {
         when (settings.vibrationType) {
             VibrationSettings.VibrationType.PREDEFINED -> {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    vibrator.vibrate(VibrationEffect.createPredefined(settings.predefinedEffectId))
+                    play(VibrationEffect.createPredefined(settings.predefinedEffectId))
                 } else {
                     vibrateOneShot(durationMs, amplitude)
                 }
@@ -948,7 +1097,7 @@ class VibrationService : Service() {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && ids.isNotEmpty()) {
                     val composition = VibrationEffect.startComposition()
                     ids.forEach { composition.addPrimitive(it) }
-                    vibrator.vibrate(composition.compose())
+                    play(composition.compose())
                 } else {
                     vibrateOneShot(durationMs, amplitude)
                 }
@@ -959,7 +1108,20 @@ class VibrationService : Service() {
 
     private fun vibrateOneShot(durationMs: Long, amplitude: Int = VibrationEffect.DEFAULT_AMPLITUDE) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            vibrator.vibrate(VibrationEffect.createOneShot(durationMs, amplitude))
+            if (!amplitudeMode && amplitude != VibrationEffect.DEFAULT_AMPLITUDE && amplitude < 250) {
+                // Kitöltési tényezős emuláció: a kért erősséget 20ms-es
+                // periódusokban az on/off arány adja, így érezhető
+                // amplitúdó-támogatás nélkül (vagy ha a készülék rosszul
+                // jelzi azt) is.
+                val periodMs = 20L
+                val onMs = (periodMs * amplitude / 255L).coerceIn(3L, periodMs - 3L)
+                val cycles = (durationMs / periodMs).toInt().coerceAtLeast(1)
+                val timings = LongArray(cycles * 2) { if (it % 2 == 0) onMs else periodMs - onMs }
+                val amps = IntArray(cycles * 2) { if (it % 2 == 0) 255 else 0 }
+                play(VibrationEffect.createWaveform(timings, amps, -1))
+            } else {
+                play(VibrationEffect.createOneShot(durationMs, amplitude))
+            }
         } else {
             @Suppress("DEPRECATION")
             vibrator.vibrate(durationMs)
@@ -986,6 +1148,9 @@ class VibrationService : Service() {
         MODE_SINE -> R.string.mode_sine_short
         MODE_SQUARE_WAVE -> R.string.mode_square_wave_short
         MODE_SAWTOOTH -> R.string.mode_sawtooth_short
+        MODE_TRIANGLE -> R.string.mode_triangle_short
+        MODE_DUAL_RHYTHM -> R.string.mode_dual_rhythm_short
+        MODE_MOTION_RESPONSIVE -> R.string.mode_motion_responsive_short
         else -> R.string.notification_title
     }
 }

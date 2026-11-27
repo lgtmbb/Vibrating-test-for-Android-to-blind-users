@@ -48,6 +48,9 @@ class MainActivity : AppCompatActivity() {
         val btnSine = findViewById<Button>(R.id.btnSine)
         val btnSquareWave = findViewById<Button>(R.id.btnSquareWave)
         val btnSawtooth = findViewById<Button>(R.id.btnSawtooth)
+        val btnTriangle = findViewById<Button>(R.id.btnTriangle)
+        val btnDualRhythm = findViewById<Button>(R.id.btnDualRhythm)
+        val btnMotionResponsive = findViewById<Button>(R.id.btnMotionResponsive)
         val btnStop = findViewById<Button>(R.id.btnStop)
         val btnSettings = findViewById<Button>(R.id.btnSettings)
         chkKeepAlive = findViewById(R.id.chkKeepAlive)
@@ -119,6 +122,15 @@ class MainActivity : AppCompatActivity() {
         }
         btnSawtooth.setOnClickListener {
             onModeButtonPressed(VibrationService.MODE_SAWTOOTH, R.string.announce_sawtooth)
+        }
+        btnTriangle.setOnClickListener {
+            onModeButtonPressed(VibrationService.MODE_TRIANGLE, R.string.announce_triangle)
+        }
+        btnDualRhythm.setOnClickListener {
+            onModeButtonPressed(VibrationService.MODE_DUAL_RHYTHM, R.string.announce_dual_rhythm)
+        }
+        btnMotionResponsive.setOnClickListener {
+            onModeButtonPressed(VibrationService.MODE_MOTION_RESPONSIVE, R.string.announce_motion_responsive)
         }
         btnStop.setOnClickListener {
             stopMode()

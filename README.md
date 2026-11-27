@@ -14,6 +14,13 @@ verzió) csak úgy telepíthető, ha **előbb teljesen eltávolítod a jelenlegi
 verziót**. Ez egyszeri lépés - utána minden további frissítés
 zökkenőmentesen, eltávolítás nélkül fog menni.
 
+## Ha az erősség nem változik a telefonon
+
+Beállítások → **Intenzitás-módszer**: próbáld az "Amplitúdó kényszerítve" és
+a "Kitöltési tényező" módot; majd a **Rezgés felhasználási osztályát**, és
+nézd meg a telefon saját Rezgés erőssége beállításait is (az Android ezzel
+skálázza az app rezgését). Részletek: `VIBRATION_API_RESEARCH.md`.
+
 ## Mit csinál a program
 
 Tizenkilenc rezgésmintát tud lejátszani, és bármelyik leállítható a
@@ -58,6 +65,9 @@ Leállítás gombbal:
 18. **Négyszögjel-szerű** *(új)* – éles BE/KI váltás fix frekvenciával.
 19. **Fűrészfog** *(új)* – lineáris rámpa, azonnali visszaugrással
     (technikailag azonos a Fokozatos erősödéssel - lásd lent).
+20. **Háromszög** – lineáris fel-le rámpa, hirtelen visszaugrás nélkül.
+21. **Kettős ritmus** – gyors, azonos lüktetések lassú, 3 szintű ciklusban.
+22. **Mozgásra reagáló** – a rezgés a telefon tényleges mozgását követi.
 
 Minden gombhoz `contentDescription` tartozik, ezért TalkBack alatt a gomb
 látható felirata helyett a hosszabb, cselekvést leíró szöveg hangzik el (ez a

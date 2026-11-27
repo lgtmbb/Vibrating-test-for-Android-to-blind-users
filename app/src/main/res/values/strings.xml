@@ -22,6 +22,9 @@
     <string name="mode_sine_button">17. Szinuszos (Sine)</string>
     <string name="mode_square_wave_button">18. Négyszögjel-szerű (Square Wave)</string>
     <string name="mode_sawtooth_button">19. Fűrészfog (Sawtooth)</string>
+    <string name="mode_triangle_button">20. Háromszög (Triangle)</string>
+    <string name="mode_dual_rhythm_button">21. Kettős Ritmus (Dual Rhythm)</string>
+    <string name="mode_motion_responsive_button">22. Mozgásra Reagáló (Motion-Responsive)</string>
     <string name="stop_button">Leállítás</string>
 
     <string name="mode_consistent_short">Állandó mód</string>
@@ -43,6 +46,9 @@
     <string name="mode_sine_short">Szinuszos</string>
     <string name="mode_square_wave_short">Négyszögjel-szerű</string>
     <string name="mode_sawtooth_short">Fűrészfog</string>
+    <string name="mode_triangle_short">Háromszög</string>
+    <string name="mode_dual_rhythm_short">Kettős ritmus</string>
+    <string name="mode_motion_responsive_short">Mozgásra reagáló</string>
 
     <string name="desc_consistent_button">Állandó Mód gomb. Folyamatos, szünet nélküli rezgést indít.</string>
     <string name="desc_pulsing_button">Pulzáló Mód gomb. Ritmikus, szabályos időközönként ismétlődő rezgést indít.</string>
@@ -63,6 +69,9 @@
     <string name="desc_sine_button">Szinuszos gomb. Az erősség simán, szinusz-görbe szerint modulálódik, a Beállításokban megadható frekvenciával és lengés-mértékkel.</string>
     <string name="desc_square_wave_button">Négyszögjel-szerű gomb. Éles, azonnali váltás be és ki között, fix frekvenciával, mint egy négyszögjel.</string>
     <string name="desc_sawtooth_button">Fűrészfog gomb. Lineárisan emelkedik minimumról maximumra, majd azonnal visszaugrik minimumra és kezdi elölről.</string>
+    <string name="desc_triangle_button">Háromszög gomb. Lineárisan emelkedik minimumról maximumra, majd lineárisan csökken vissza, folyamatosan ismételve - hirtelen visszaugrás nélkül.</string>
+    <string name="desc_dual_rhythm_button">Kettős Ritmus gomb. Gyors, azonos lüktetések egy lassabb ciklusba ágyazva, ami időnként megváltoztatja az összesített erősségüket.</string>
+    <string name="desc_motion_responsive_button">Mozgásra Reagáló gomb. A rezgés erőssége és hossza valós időben követi a telefon mozgását; nyugalomban elhallgat.</string>
     <string name="desc_stop_button">Leállítás gomb. Az összes folyamatban lévő rezgést azonnal megszakítja.</string>
     <string name="desc_keep_alive_checkbox">Folytatás képernyőzár után. Ha be van jelölve, a rezgés a képernyő lezárása vagy az alkalmazás háttérbe kerülése után is folytatódik, egy értesítés jelzi a futást.</string>
 
@@ -87,6 +96,9 @@
     <string name="announce_sine">Szinuszos mód elindítva</string>
     <string name="announce_square_wave">Négyszögjel-szerű mód elindítva</string>
     <string name="announce_sawtooth">Fűrészfog mód elindítva</string>
+    <string name="announce_triangle">Háromszög mód elindítva</string>
+    <string name="announce_dual_rhythm">Kettős ritmus mód elindítva</string>
+    <string name="announce_motion_responsive">Mozgásra reagáló mód elindítva</string>
     <string name="announce_stop">Rezgések leállítva</string>
     <string name="announce_keep_alive_on">Képernyőzár utáni folytatás bekapcsolva</string>
     <string name="announce_keep_alive_off">Képernyőzár utáni folytatás kikapcsolva</string>
@@ -95,7 +107,7 @@
     <string name="notification_title">Rezgés Tesztelő aktív</string>
 
     <!-- Settings button on the main screen -->
-    <string name="settings_button">20. Beállítások</string>
+    <string name="settings_button">23. Beállítások</string>
     <string name="desc_settings_button">Beállítások gomb. Megnyitja a rezgés erősségét, hosszát, szünetét és egyéb részleteit szabályozó képernyőt.</string>
     <string name="announce_already_running">Már fut ez a mód, a gomb nem indította újra</string>
 
@@ -125,12 +137,12 @@
 
     <string name="settings_section_amplitude">Rezgés erőssége</string>
     <string name="use_custom_amplitude_label">Egyéni erősség használata</string>
-    <string name="use_custom_amplitude_description">Ha ki van kapcsolva, a rendszer alapértelmezett erősségét használja az alkalmazás (ez esetben a Fokozatos Gyengülés maximumról indul). Csak Android 8.0-tól és csak olyan hardveren módosítható, amely jelzi az erősségszabályzás támogatását - ha nem elérhető, ez a kapcsoló le van tiltva. A Kiszámíthatatlan mód ezt a beállítást nem veszi figyelembe, mert ott az erősség minden lüktetésnél önmagában is véletlenszerű; a Kalapács mód pedig mindig a maximumot használja, szándékosan.</string>
+    <string name="use_custom_amplitude_description">Ha ki van kapcsolva, a rendszer alapértelmezett erősségét használja az alkalmazás (ez esetben a Fokozatos Gyengülés maximumról indul). A kapcsoló mindig elérhető, akkor is, ha a készülék nem jelzi az erősségszabályzás támogatását: az "Intenzitás-módszer" dönti el, hogyan valósul meg a kért erősség. A Kiszámíthatatlan mód ezt nem veszi figyelembe, a Kalapács mód pedig szándékosan mindig a maximumot használja.</string>
     <string name="amplitude_value_format">Erősség: %1$d / 255</string>
 
     <string name="settings_section_duration">Rezgés hossza</string>
     <string name="duration_label">Rezgés hossza ezredmásodpercben (ms)</string>
-    <string name="duration_description">Az Állandó, Pulzáló és Következetlen mód rezgési impulzusainak hossza (a Következetlen módnál ez csak a szórás középpontja). Emellett a Rövid-Hosszú Váltakozás "rövid" szakaszának, a Fokozatos Erősödés/Gyengülés rámpájának, a Hullámzó Intenzitás egy teljes ciklusának, a Lépcsőzetes Erősödés és a Hirtelen Módváltás egy-egy szintjének, és a Burst Sorozat lüktetéseinek is ez a hossza (utóbbinál legfeljebb 150ms-re korlátozva). A Vákuum, a Kiszámíthatatlan és a Kalapács mód ezt nem használja.</string>
+    <string name="duration_description">Az Állandó, Pulzáló és Következetlen mód impulzusainak hossza (a Következetlennél ez csak a szórás középpontja). Emellett a Rövid-Hosszú Váltakozás "rövid" szakaszáé, a Fokozatos Erősödés/Gyengülés, a Fűrészfog és a Háromszög rámpájáé, a Hullámzó Intenzitás és a Kettős Ritmus egy teljes ciklusáé, a Lépcsőzetes Erősödés és a Hirtelen Módváltás egy-egy szintjéé, és a Burst Sorozat lüktetéseié (utóbbinál legfeljebb 150ms). A Vákuum, a Kiszámíthatatlan, a Kalapács és a Mozgásra Reagáló mód ezt nem használja.</string>
 
     <string name="settings_section_pause">Szünet hossza</string>
     <string name="pause_label">Szünet hossza ezredmásodpercben (ms)</string>
@@ -149,6 +161,21 @@
     <string name="settings_section_predefined_effect">Melyik előre definiált effektus</string>
     <string name="settings_section_composition">Mely primitívek szerepeljenek az összetett rezgésben</string>
     <string name="composition_description">Legalább egy primitívet ki kell választani. Ha egyik sem elérhető ezen a készüléken, vagy egy sem lett kiválasztva, az alkalmazás csendben visszaesik az egyéni hullámformára.</string>
+
+    <string name="settings_section_intensity_method">Intenzitás-módszer</string>
+    <string name="intensity_method_description">Hogyan valósuljon meg a "gyengébb / erősebb" rezgés. Automatikus: amplitúdót kér, ha a hardver jelzi a támogatását, különben a kitöltési tényezőt (az on/off arányt) modulálja. Amplitúdó kényszerítve: mindig amplitúdót kér - akkor is, ha a készülék azt jelzi, hogy nem támogatja (egyes gyártók eszközei rosszul jelentik). Kitöltési tényező: mindig az on/off arányt modulálja, ami minden hardveren érezhető, mert nem az amplitúdó-támogatásra épül. Ha egy telefonon nem változik az erősség, próbáld ezt a kettőt.</string>
+    <string name="method_auto">Automatikus (a hardver jelzése alapján)</string>
+    <string name="method_amplitude">Amplitúdó kényszerítve</string>
+    <string name="method_duty">Kitöltési tényező (on/off arány)</string>
+
+    <string name="settings_section_usage">Rezgés felhasználási osztálya</string>
+    <string name="usage_description">Az Android a rendszer-szintű Rezgés erőssége beállítások (hívás, értesítés, érintés, média) szerint skálázza az alkalmazások rezgését, és a háttérből induló rezgést csak figyelemfelkeltő osztállyal engedi. Ha a telefonon az adott kategória gyengére van állítva, az az app amplitúdó-különbségeit összenyomja. Ha az erősség nem változik, próbálj másik osztályt, és ellenőrizd a telefon Rezgés erőssége beállításait.</string>
+    <string name="usage_alarm">Ébresztő (alapértelmezett, háttérben is megbízható)</string>
+    <string name="usage_accessibility">Kisegítő lehetőségek</string>
+    <string name="usage_notification">Értesítés</string>
+    <string name="usage_touch">Érintés-visszajelzés</string>
+    <string name="usage_media">Média</string>
+    <string name="usage_unknown">Nincs megadva</string>
 
     <string name="settings_section_wave_frequency">Szinuszos / Négyszögjel-szerű mód frekvenciája</string>
     <string name="wave_frequency_description">A Szinuszos és a Négyszögjel-szerű mód közös frekvenciája Hz-ben (mennyi teljes ciklus fut másodpercenként).</string>

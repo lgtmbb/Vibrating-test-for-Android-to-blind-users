@@ -5,6 +5,29 @@ egy .zip-be csomagolt fájlból állt, teljes build-rendszer nélkül. Ez a
 verzió az első, ami tényleges, lefordítható Android Studio projektként van
 strukturálva.
 
+## [2.1.0]
+
+### Javítva
+- **Samsung S25: az intenzitás nem volt állítható.** A kapcsoló le volt
+  tiltva, ha a hardver nem jelezte az erősségszabályzást; az automatikus
+  mód ilyenkor csendben kitöltési tényezőre váltott; az app nem adott meg
+  rezgés-felhasználási osztályt, így a rendszer erősség-beállításai
+  ellenőrizhetetlenül skálázták. Új Beállítások: **Intenzitás-módszer**
+  (Automatikus / Amplitúdó kényszerítve / Kitöltési tényező) és **Rezgés
+  felhasználási osztálya**; az egyéni erősség kapcsoló mindig elérhető.
+  Eszköz nélkül nem tudtam ellenőrizni, melyik ok áll fenn az S25-ön -
+  ezért választható módszerek lettek. Lásd `VIBRATION_API_RESEARCH.md`.
+- **Lezárt képernyő**: a wake lock 30 perces időkorlátja megszűnt, és a
+  rezgések mostantól "Ébresztő" felhasználási osztállyal szólnak
+  (háttérből csak figyelemfelkeltő rezgés engedett).
+
+### Hozzáadva
+- **20. Háromszög**: lineáris fel-le rámpa, visszaugrás nélkül.
+- **21. Kettős ritmus**: gyors, azonos lüktetések lassú, 3 szintű ciklusban.
+- **22. Mozgásra reagáló**: a rezgés a telefon valós mozgását követi
+  (gyorsulásmérő).
+- Gombok: 1-22, majd Leállítás, majd 23. Beállítások.
+
 ## [1.9.0]
 
 ### JAVÍTVA - kritikus telepítési hiba

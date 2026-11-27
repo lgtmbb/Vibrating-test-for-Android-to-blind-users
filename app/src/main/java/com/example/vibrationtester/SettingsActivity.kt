@@ -47,6 +47,8 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var lblWaveFrequencyValue: TextView
     private lateinit var seekSineAmplitude: SeekBar
     private lateinit var lblSineAmplitudeValue: TextView
+    private lateinit var radioIntensityMethod: RadioGroup
+    private lateinit var radioVibrationUsage: RadioGroup
     private lateinit var chkRestartOnRepeatPress: CheckBox
 
     // Egyszerű flag, ami elnyomja a callback-eket a mezők kezdeti feltöltése
@@ -72,6 +74,8 @@ class SettingsActivity : AppCompatActivity() {
         populateDurationAndPause()
         populateUnpredictability()
         populateVibrationTypeSection()
+        populateIntensityMethodSection()
+        populateUsageSection()
         populateWaveFrequencySection()
         populateRepeatPressSection()
     }
@@ -93,6 +97,8 @@ class SettingsActivity : AppCompatActivity() {
         lblWaveFrequencyValue = findViewById(R.id.lblWaveFrequencyValue)
         seekSineAmplitude = findViewById(R.id.seekSineAmplitude)
         lblSineAmplitudeValue = findViewById(R.id.lblSineAmplitudeValue)
+        radioIntensityMethod = findViewById(R.id.radioIntensityMethod)
+        radioVibrationUsage = findViewById(R.id.radioVibrationUsage)
         chkRestartOnRepeatPress = findViewById(R.id.chkRestartOnRepeatPress)
     }
 
@@ -171,7 +177,11 @@ class SettingsActivity : AppCompatActivity() {
     // --- Amplitude ------------------------------------------------------------
 
     private fun populateAmplitudeSection() {
-        val amplitudeAvailable = report.hasAmplitudeControl
+        // Szándékosan MINDIG elérhető: egyes gyártók eszközei (pl. Samsung) rosszul
+        // vagy sehogy sem jelzik az erősségszabályzást, így a kapcsoló letiltása
+        // pont azt akadályozta meg, hogy a felhasználó kipróbálja. A tényleges
+        // viselkedést az "Intenzitás-módszer" választja (lásd lent).
+        val amplitudeAvailable = true
         chkUseCustomAmplitude.isEnabled = amplitudeAvailable
         seekAmplitude.isEnabled = amplitudeAvailable
 
@@ -363,6 +373,49 @@ class SettingsActivity : AppCompatActivity() {
 
     private fun updateSineAmplitudeLabel() {
         lblSineAmplitudeValue.text = getString(R.string.sine_amplitude_value_format, seekSineAmplitude.progress + 5)
+    }
+
+    // --- Intenzitás-módszer és rezgés-felhasználási osztály ------------------
+
+    private fun populateIntensityMethodSection() {
+        val current = settings.intensityMethod
+        radioIntensityMethod.check(
+            when (current) {
+                VibrationSettings.IntensityMethod.AUTO -> R.id.radioMethodAuto
+                VibrationSettings.IntensityMethod.AMPLITUDE -> R.id.radioMethodAmplitude
+                VibrationSettings.IntensityMethod.DUTY_CYCLE -> R.id.radioMethodDuty
+            }
+        )
+        radioIntensityMethod.setOnCheckedChangeListener { _, checkedId ->
+            settings.intensityMethod = when (checkedId) {
+                R.id.radioMethodAmplitude -> VibrationSettings.IntensityMethod.AMPLITUDE
+                R.id.radioMethodDuty -> VibrationSettings.IntensityMethod.DUTY_CYCLE
+                else -> VibrationSettings.IntensityMethod.AUTO
+            }
+        }
+    }
+
+    private fun populateUsageSection() {
+        radioVibrationUsage.check(
+            when (settings.vibrationUsage) {
+                VibrationSettings.VibrationUsage.ALARM -> R.id.radioUsageAlarm
+                VibrationSettings.VibrationUsage.ACCESSIBILITY -> R.id.radioUsageAccessibility
+                VibrationSettings.VibrationUsage.NOTIFICATION -> R.id.radioUsageNotification
+                VibrationSettings.VibrationUsage.TOUCH -> R.id.radioUsageTouch
+                VibrationSettings.VibrationUsage.MEDIA -> R.id.radioUsageMedia
+                VibrationSettings.VibrationUsage.UNKNOWN -> R.id.radioUsageUnknown
+            }
+        )
+        radioVibrationUsage.setOnCheckedChangeListener { _, checkedId ->
+            settings.vibrationUsage = when (checkedId) {
+                R.id.radioUsageAccessibility -> VibrationSettings.VibrationUsage.ACCESSIBILITY
+                R.id.radioUsageNotification -> VibrationSettings.VibrationUsage.NOTIFICATION
+                R.id.radioUsageTouch -> VibrationSettings.VibrationUsage.TOUCH
+                R.id.radioUsageMedia -> VibrationSettings.VibrationUsage.MEDIA
+                R.id.radioUsageUnknown -> VibrationSettings.VibrationUsage.UNKNOWN
+                else -> VibrationSettings.VibrationUsage.ALARM
+            }
+        }
     }
 
     // --- Repeat-press behaviour ----------------------------------------------
