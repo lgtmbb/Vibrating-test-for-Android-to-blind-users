@@ -5,6 +5,22 @@ egy .zip-be csomagolt fájlból állt, teljes build-rendszer nélkül. Ez a
 verzió az első, ami tényleges, lefordítható Android Studio projektként van
 strukturálva.
 
+## [2.2.0]
+
+### Javítva
+- **Az erősség-csúszka nem hatott a legtöbb módra.** A régi "egyéni
+  erősség" csak négy módot érintett. Helyette egyetlen **fő erősség
+  (1-100%)** érvényesül központilag minden módon (amplitúdó, kitöltési
+  tényező, primitív-skála, envelope). Az előre definiált effektusok
+  nem skálázhatók (Android-korlát).
+- A Beállítások-ban a kapcsoló elrejtve, a csúszka mindig aktív.
+
+### Hozzáadva
+- **Erősség-kalibráció**: a telefon gyorsulásmérőjével méri, melyik módszer
+  (amplitúdó / kitöltési tényező) változtatja ténylegesen a rezgést, és azt
+  állítja be. Mozdulatlan, kemény felületen kell futtatni, kb. 15 mp.
+- `VIBRATION_API_RESEARCH.md`: második kör a Samsung-esetről.
+
 ## [2.1.0]
 
 ### Javítva

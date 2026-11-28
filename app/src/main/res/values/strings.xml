@@ -55,7 +55,7 @@
     <string name="desc_inconsistent_button">Következetlen Mód gomb. A Beállításokban megadott hossz és szünet körül, mérsékelt mértékben véletlenszerű rezgéseket indít.</string>
     <string name="desc_vacuum_button">Vákuum Mód gomb. Fokozatosan erősödő, majd hirtelen megszakadó rezgést indít, mintha beszívás történne.</string>
     <string name="desc_truly_random_button">Kiszámíthatatlan Mód gomb. Négy különböző lüktetés-ritmus (rövid sorozat, hosszú csend utáni meglepetés, folyamatos hullám, kettős kopogás) és rezgésjelleg (egyéni hullámforma, előre definiált effektus, összetett primitívek, Android 16-os envelope-effektus) között véletlenszerűen vált, ismétlődés-elkerüléssel - jóval erősebben, mint a Következetlen mód -, hogy ne alakuljon ki felismerhető minta.</string>
-    <string name="desc_hammer_button">Kalapács Mód gomb. A lehető legerősebb rezgést indítja, folyamatosan, de nagyon apró szünetekkel megszakítva - mint amikor valaki ismételten lesújt egy kalapáccsal. Az erősség mindig maximális, csak az ütések apró időzítése ingadozik enyhén.</string>
+    <string name="desc_hammer_button">Kalapács Mód gomb. Erős rezgés, folyamatosan, de nagyon apró szünetekkel megszakítva - mint amikor valaki ismételten lesújt egy kalapáccsal. Az erősség nem véletlenszerű: a fő erősség szerint (alapértelmezés 100%, a legerősebb), csak az ütések apró időzítése ingadozik enyhén.</string>
     <string name="desc_short_long_button">Rövid-Hosszú Váltakozás gomb. Egy rövid, majd egy hosszú rezgést ismétel, minden körben pontosan ugyanazzal az időzítéssel - a Beállításokban megadott hossz és szünet alapján.</string>
     <string name="desc_ramp_up_button">Fokozatos Erősödés gomb. Alacsony erősségről indulva folyamatosan és fokozatosan erősödik a maximumig a Beállításokban megadott hossz alatt, majd újrakezdi.</string>
     <string name="desc_ramp_down_button">Fokozatos Gyengülés gomb. A Beállításokban megadott erősségről indulva fokozatosan gyengül majdnem nulláig a megadott hossz alatt, majd újrakezdi.</string>
@@ -137,8 +137,8 @@
 
     <string name="settings_section_amplitude">Rezgés erőssége</string>
     <string name="use_custom_amplitude_label">Egyéni erősség használata</string>
-    <string name="use_custom_amplitude_description">Ha ki van kapcsolva, a rendszer alapértelmezett erősségét használja az alkalmazás (ez esetben a Fokozatos Gyengülés maximumról indul). A kapcsoló mindig elérhető, akkor is, ha a készülék nem jelzi az erősségszabályzás támogatását: az "Intenzitás-módszer" dönti el, hogyan valósul meg a kért erősség. A Kiszámíthatatlan mód ezt nem veszi figyelembe, a Kalapács mód pedig szándékosan mindig a maximumot használja.</string>
-    <string name="amplitude_value_format">Erősség: %1$d / 255</string>
+    <string name="use_custom_amplitude_description">Egyetlen fő erősség 1-100%-ban, ami MINDEN módra érvényes (100% = a mód saját legnagyobb erőssége). Az Előre definiált effektusokat az Android nem engedi skálázni, azok mindig a gyártó által hangolt erősségen szólnak.</string>
+    <string name="amplitude_value_format">Fő erősség: %1$d%%</string>
 
     <string name="settings_section_duration">Rezgés hossza</string>
     <string name="duration_label">Rezgés hossza ezredmásodpercben (ms)</string>
@@ -162,6 +162,11 @@
     <string name="settings_section_composition">Mely primitívek szerepeljenek az összetett rezgésben</string>
     <string name="composition_description">Legalább egy primitívet ki kell választani. Ha egyik sem elérhető ezen a készüléken, vagy egy sem lett kiválasztva, az alkalmazás csendben visszaesik az egyéni hullámformára.</string>
 
+    <string name="settings_section_calibration">Erősség-kalibráció (mérés)</string>
+    <string name="calibration_description">A telefon saját gyorsulásmérőjével méri, hogy az amplitúdó, illetve a kitöltési tényező tényleg érezhetően változtatja-e a rezgést, és a jobbat választja az Intenzitás-módszerhez. Tedd a telefont mozdulatlanul egy kemény felületre (asztalra), indítás után 3 másodperccel kezdődik, kb. 15 másodpercig tart.</string>
+    <string name="calibration_button">Kalibráció indítása</string>
+    <string name="calibration_prepare">Tedd le a telefont mozdulatlanul egy kemény felületre. 3 másodperc múlva indul a mérés.</string>
+    <string name="calibration_running">Mérés folyamatban, ne mozdítsd a telefont.</string>
     <string name="settings_section_intensity_method">Intenzitás-módszer</string>
     <string name="intensity_method_description">Hogyan valósuljon meg a "gyengébb / erősebb" rezgés. Automatikus: amplitúdót kér, ha a hardver jelzi a támogatását, különben a kitöltési tényezőt (az on/off arányt) modulálja. Amplitúdó kényszerítve: mindig amplitúdót kér - akkor is, ha a készülék azt jelzi, hogy nem támogatja (egyes gyártók eszközei rosszul jelentik). Kitöltési tényező: mindig az on/off arányt modulálja, ami minden hardveren érezhető, mert nem az amplitúdó-támogatásra épül. Ha egy telefonon nem változik az erősség, próbáld ezt a kettőt.</string>
     <string name="method_auto">Automatikus (a hardver jelzése alapján)</string>

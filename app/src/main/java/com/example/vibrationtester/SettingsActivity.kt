@@ -15,7 +15,15 @@ import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.SeekBar
 import android.widget.TextView
+import android.content.Intent
+import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /**
  * Minden felfedezett, futásidejűen ellenőrzött rezgés-paramétert felkínál
@@ -48,6 +56,9 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var seekSineAmplitude: SeekBar
     private lateinit var lblSineAmplitudeValue: TextView
     private lateinit var radioIntensityMethod: RadioGroup
+    private lateinit var btnCalibrate: Button
+    private lateinit var lblCalibrationResult: TextView
+    private val uiScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private lateinit var radioVibrationUsage: RadioGroup
     private lateinit var chkRestartOnRepeatPress: CheckBox
 
@@ -75,6 +86,7 @@ class SettingsActivity : AppCompatActivity() {
         populateUnpredictability()
         populateVibrationTypeSection()
         populateIntensityMethodSection()
+        populateCalibrationSection()
         populateUsageSection()
         populateWaveFrequencySection()
         populateRepeatPressSection()
@@ -98,6 +110,8 @@ class SettingsActivity : AppCompatActivity() {
         seekSineAmplitude = findViewById(R.id.seekSineAmplitude)
         lblSineAmplitudeValue = findViewById(R.id.lblSineAmplitudeValue)
         radioIntensityMethod = findViewById(R.id.radioIntensityMethod)
+        btnCalibrate = findViewById(R.id.btnCalibrate)
+        lblCalibrationResult = findViewById(R.id.lblCalibrationResult)
         radioVibrationUsage = findViewById(R.id.radioVibrationUsage)
         chkRestartOnRepeatPress = findViewById(R.id.chkRestartOnRepeatPress)
     }
@@ -177,31 +191,18 @@ class SettingsActivity : AppCompatActivity() {
     // --- Amplitude ------------------------------------------------------------
 
     private fun populateAmplitudeSection() {
-        // Szándékosan MINDIG elérhető: egyes gyártók eszközei (pl. Samsung) rosszul
-        // vagy sehogy sem jelzik az erősségszabályzást, így a kapcsoló letiltása
-        // pont azt akadályozta meg, hogy a felhasználó kipróbálja. A tényleges
-        // viselkedést az "Intenzitás-módszer" választja (lásd lent).
-        val amplitudeAvailable = true
-        chkUseCustomAmplitude.isEnabled = amplitudeAvailable
-        seekAmplitude.isEnabled = amplitudeAvailable
-
-        isPopulating = true
-        chkUseCustomAmplitude.isChecked = amplitudeAvailable && settings.useCustomAmplitude
-        seekAmplitude.progress = (settings.customAmplitude - 1).coerceIn(0, 254)
+        // Egyetlen, minden módra érvényes fő erősség (1-100%). A korábbi
+        // "egyéni erősség" kapcsoló csak négy módra hatott, ezért
+        // tűnt úgy, hogy a csúszka nem csinál semmit.
+        chkUseCustomAmplitude.visibility = android.view.View.GONE
+        seekAmplitude.max = 99
+        seekAmplitude.isEnabled = true
+        seekAmplitude.progress = (settings.masterIntensityPercent - 1).coerceIn(0, 99)
         updateAmplitudeLabel()
-        isPopulating = false
-
-        chkUseCustomAmplitude.setOnCheckedChangeListener { _, isChecked ->
-            if (isPopulating) return@setOnCheckedChangeListener
-            settings.useCustomAmplitude = isChecked
-            seekAmplitude.isEnabled = isChecked && amplitudeAvailable
-        }
-        seekAmplitude.isEnabled = chkUseCustomAmplitude.isChecked && amplitudeAvailable
-
         seekAmplitude.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 updateAmplitudeLabel()
-                if (fromUser) settings.customAmplitude = progress + 1
+                if (fromUser) settings.masterIntensityPercent = progress + 1
             }
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
@@ -210,6 +211,31 @@ class SettingsActivity : AppCompatActivity() {
 
     private fun updateAmplitudeLabel() {
         lblAmplitudeValue.text = getString(R.string.amplitude_value_format, seekAmplitude.progress + 1)
+    }
+
+    // --- Erősség-kalibráció (gyorsulásmérővel) ---------------------------------
+
+    private fun populateCalibrationSection() {
+        btnCalibrate.setOnClickListener {
+            btnCalibrate.isEnabled = false
+            startService(Intent(this, VibrationService::class.java).apply { action = VibrationService.ACTION_STOP })
+            lblCalibrationResult.text = getString(R.string.calibration_prepare)
+            uiScope.launch {
+                delay(3000)
+                lblCalibrationResult.text = getString(R.string.calibration_running)
+                val result = IntensityCalibrator(this@SettingsActivity, vibrator, settings.vibrationUsage).run()
+                result.chosen?.let { settings.intensityMethod = it }
+                lblCalibrationResult.text = result.report
+                populateIntensityMethodSection()
+                btnCalibrate.isEnabled = true
+            }
+        }
+    }
+
+    override fun onDestroy() {
+        uiScope.cancel()
+        vibrator.cancel()
+        super.onDestroy()
     }
 
     // --- Duration / pause -------------------------------------------------

@@ -16,7 +16,7 @@ zökkenőmentesen, eltávolítás nélkül fog menni.
 
 ## Ha az erősség nem változik a telefonon
 
-Beállítások → **Intenzitás-módszer**: próbáld az "Amplitúdó kényszerítve" és
+Beállítások → **Erősség-kalibráció** (tedd a telefont asztalra, a gyorsulásmérővel mér, és beállítja a megfelelő módszert), vagy kézzel: **Intenzitás-módszer**: próbáld az "Amplitúdó kényszerítve" és
 a "Kitöltési tényező" módot; majd a **Rezgés felhasználási osztályát**, és
 nézd meg a telefon saját Rezgés erőssége beállításait is (az Android ezzel
 skálázza az app rezgését). Részletek: `VIBRATION_API_RESEARCH.md`.

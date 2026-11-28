@@ -207,6 +207,26 @@
                 android:textColor="#FFFFFF" />
         </RadioGroup>
 
+        <!-- Calibration -->
+        <TextView
+            style="@style/SettingsSectionHeader"
+            android:text="@string/settings_section_calibration" />
+        <TextView
+            style="@style/SettingsDescription"
+            android:text="@string/calibration_description" />
+        <Button
+            android:id="@+id/btnCalibrate"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:text="@string/calibration_button"
+            android:backgroundTint="#333333"
+            android:textColor="#FFFFFF" />
+        <TextView
+            android:id="@+id/lblCalibrationResult"
+            style="@style/SettingsDescription"
+            android:accessibilityLiveRegion="polite"
+            android:layout_marginBottom="24dp" />
+
         <!-- Vibration usage class -->
         <TextView
             style="@style/SettingsSectionHeader"

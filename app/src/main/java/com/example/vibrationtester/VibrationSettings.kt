@@ -74,8 +74,19 @@ class VibrationSettings(context: Context) {
         set(value) = prefs.edit().putInt(KEY_AMPLITUDE, value.coerceIn(1, 255)).apply()
 
     /** A ténylegesen a VibrationEffect hívásoknak átadandó erősség. */
-    fun effectiveAmplitude(): Int =
-        if (useCustomAmplitude) customAmplitude else VibrationEffect.DEFAULT_AMPLITUDE
+    fun effectiveAmplitude(): Int = 255
+
+    /**
+     * Fő erősség százalékban (1-100), MINDEN módra érvényes: a lejátszás
+     * központi pontján (VibrationService) skálázza az összes amplitúdót,
+     * kitöltési tényezőt, primitív-skálát és envelope-intenzitást. 100% =
+     * a mód saját, legnagyobb erőssége. (A korábbi "egyéni erősség"
+     * kapcsoló csak négy módra hatott, ezért tűnt úgy, hogy a csúszka nem
+     * csinál semmit.)
+     */
+    var masterIntensityPercent: Int
+        get() = prefs.getInt(KEY_MASTER_INTENSITY, 100)
+        set(value) = prefs.edit().putInt(KEY_MASTER_INTENSITY, value.coerceIn(1, 100)).apply()
 
     var durationMs: Long
         get() = prefs.getLong(KEY_DURATION, DEFAULT_DURATION_MS)
@@ -158,6 +169,7 @@ class VibrationSettings(context: Context) {
         private const val KEY_VIBRATION_TYPE = "vibration_type"
         private const val KEY_PREDEFINED_EFFECT = "predefined_effect_id"
         private const val KEY_PRIMITIVES = "selected_primitives"
+        private const val KEY_MASTER_INTENSITY = "master_intensity_percent"
         private const val KEY_INTENSITY_METHOD = "intensity_method"
         private const val KEY_USAGE = "vibration_usage"
         private const val KEY_WAVE_FREQUENCY = "wave_frequency_tenths_hz"

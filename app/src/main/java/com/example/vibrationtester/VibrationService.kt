@@ -1020,7 +1020,7 @@ class VibrationService : Service() {
                 val chosen = primitiveCandidates.shuffled().take(count)
                 val composition = VibrationEffect.startComposition()
                 chosen.forEachIndexed { i, primitiveId ->
-                    val scale = Random.nextDouble(0.3, 1.0).toFloat()
+                    val scale = (Random.nextDouble(0.3, 1.0).toFloat() * masterScale()).coerceIn(0.01f, 1f)
                     val primitiveDelay = if (i == 0) 0 else Random.nextInt(0, 80)
                     composition.addPrimitive(primitiveId, scale, primitiveDelay)
                 }
@@ -1035,7 +1035,7 @@ class VibrationService : Service() {
                 var total = 0L
                 val pointCount = Random.nextInt(1, 3)
                 repeat(pointCount) {
-                    val intensity = Random.nextDouble(0.15, 1.0).toFloat()
+                    val intensity = (Random.nextDouble(0.15, 1.0).toFloat() * masterScale()).coerceIn(0.01f, 1f)
                     val sharpness = Random.nextDouble(0.0, 1.0).toFloat()
                     val pointDuration = Random.nextLong(40L, 220L)
                     builder.addControlPoint(intensity, sharpness, pointDuration)
@@ -1069,7 +1069,14 @@ class VibrationService : Service() {
 
     private fun vibrateWaveform(timings: LongArray, amplitudes: IntArray, repeat: Int = -1) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            play(VibrationEffect.createWaveform(timings, amplitudes, repeat))
+            // A fő erősség központi érvényesítése minden hullámformán.
+            val scaledAmps = IntArray(amplitudes.size) { if (amplitudes[it] <= 0) 0 else scaleAmp(amplitudes[it]) }
+            if (!amplitudeMode) {
+                val (t, a) = emulateDutyCycle(timings, scaledAmps)
+                play(VibrationEffect.createWaveform(t, a, repeat))
+            } else {
+                play(VibrationEffect.createWaveform(timings, scaledAmps, repeat))
+            }
         } else {
             @Suppress("DEPRECATION")
             vibrator.vibrate(timings, repeat)
@@ -1096,7 +1103,7 @@ class VibrationService : Service() {
                 val ids = settings.selectedPrimitiveIds
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && ids.isNotEmpty()) {
                     val composition = VibrationEffect.startComposition()
-                    ids.forEach { composition.addPrimitive(it) }
+                    ids.forEach { composition.addPrimitive(it, masterScale()) }
                     play(composition.compose())
                 } else {
                     vibrateOneShot(durationMs, amplitude)
@@ -1106,21 +1113,55 @@ class VibrationService : Service() {
         }
     }
 
+    private fun masterScale(): Float = settings.masterIntensityPercent / 100f
+
+    /** A fő erősséggel skálázott amplitúdó (1-255). DEFAULT_AMPLITUDE = 255-nek számít. */
+    private fun scaleAmp(amplitude: Int): Int {
+        val base = if (amplitude == VibrationEffect.DEFAULT_AMPLITUDE) 255 else amplitude
+        return (base * masterScale()).toInt().coerceIn(1, 255)
+    }
+
+    /**
+     * Kitöltési tényezős emuláció: az 1-249 közti amplitúdójú BE-szegmenseket
+     * 20ms-es periódusokra bontja, ahol az on/off arány adja az erősséget.
+     * Így az erősség akkor is érezhetően változik, ha a készülék az
+     * amplitúdót figyelmen kívül hagyja.
+     */
+    private fun emulateDutyCycle(timings: LongArray, amplitudes: IntArray): Pair<LongArray, IntArray> {
+        val t = ArrayList<Long>()
+        val a = ArrayList<Int>()
+        val periodMs = 20L
+        for (i in timings.indices) {
+            val dur = timings[i]
+            val amp = amplitudes[i]
+            if (amp <= 0 || amp >= 250 || dur < periodMs) {
+                t.add(dur); a.add(if (amp <= 0) 0 else if (amp >= 250) 255 else 255)
+                continue
+            }
+            val onMs = (periodMs * amp / 255L).coerceIn(3L, periodMs - 3L)
+            val cycles = (dur / periodMs).toInt()
+            repeat(cycles) {
+                t.add(onMs); a.add(255)
+                t.add(periodMs - onMs); a.add(0)
+            }
+            val rest = dur - cycles * periodMs
+            if (rest > 0) {
+                val restOn = minOf(onMs, rest)
+                t.add(restOn); a.add(255)
+                if (rest - restOn > 0) { t.add(rest - restOn); a.add(0) }
+            }
+        }
+        return t.toLongArray() to a.toIntArray()
+    }
+
     private fun vibrateOneShot(durationMs: Long, amplitude: Int = VibrationEffect.DEFAULT_AMPLITUDE) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            if (!amplitudeMode && amplitude != VibrationEffect.DEFAULT_AMPLITUDE && amplitude < 250) {
-                // Kitöltési tényezős emuláció: a kért erősséget 20ms-es
-                // periódusokban az on/off arány adja, így érezhető
-                // amplitúdó-támogatás nélkül (vagy ha a készülék rosszul
-                // jelzi azt) is.
-                val periodMs = 20L
-                val onMs = (periodMs * amplitude / 255L).coerceIn(3L, periodMs - 3L)
-                val cycles = (durationMs / periodMs).toInt().coerceAtLeast(1)
-                val timings = LongArray(cycles * 2) { if (it % 2 == 0) onMs else periodMs - onMs }
-                val amps = IntArray(cycles * 2) { if (it % 2 == 0) 255 else 0 }
-                play(VibrationEffect.createWaveform(timings, amps, -1))
+            val scaled = scaleAmp(amplitude)
+            if (!amplitudeMode && scaled < 250) {
+                val (t, a) = emulateDutyCycle(longArrayOf(durationMs), intArrayOf(scaled))
+                play(VibrationEffect.createWaveform(t, a, -1))
             } else {
-                play(VibrationEffect.createOneShot(durationMs, amplitude))
+                play(VibrationEffect.createOneShot(durationMs, scaled))
             }
         } else {
             @Suppress("DEPRECATION")

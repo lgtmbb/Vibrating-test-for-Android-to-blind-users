@@ -382,6 +382,45 @@ elhallgatva dokumentáljuk:
   eltérését használja a gravitációtól (`GRAVITY_EARTH`); külön jogosultság
   nem kell hozzá. Forrás: [Motion sensors](https://developer.android.com/develop/sensors-and-location/sensors/sensors_motion)
 
+## Az erősség-csúszka "nem csinál semmit" - második kör (v2.2.0)
+
+**Tünet**: a Beállításokban az erősséget 0-ra vagy 100-ra állítva sem változott semmi
+(Samsung S25).
+
+**Az app hibája, amit ez a kör javít**: az "egyéni erősség" kapcsoló + csúszka
+csak az Állandó, Pulzáló, Következetlen és Véletlenszerű időzítés módra hatott;
+a többi mód (Kalapács, Burst, Négyszögjel, Szinuszos stb.) fix 255-ös vagy
+saját relatív erősséget használt. Aki ezek valamelyikét próbálta, joggal látta
+úgy, hogy a csúszka hatástalan. Mostantól egyetlen **fő erősség (1-100%)**
+érvényesül a lejátszás központi pontján, minden módra: az amplitúdókra
+(`scaleAmp`), a kitöltési tényezős emulációra, a kompozíció-primitívek
+`scale` paraméterére és az envelope-intenzitásra. Kivétel: az előre definiált
+effektusokat (`createPredefined`) az Android nem engedi skálázni.
+
+**Ami eszköz nélkül nem dönthető el**: hogy az S25 a kért amplitúdót valóban
+figyelembe veszi-e. A Samsung-fórumon és a libretro-fórumon vannak jelentések
+arról, hogy egyes Galaxy-eszközök az alkalmazás által kért rezgéserősséget
+figyelmen kívül hagyják (az API hibátlanul elfogadja, a hatás elmarad), de az
+S25-re vonatkozó hivatalos dokumentációt nem találtam. Ezért az app nem
+találgat, hanem **mér**: a Beállítások "Erősség-kalibráció" gombja a telefon
+saját gyorsulásmérőjével 15% / 50% / 100% szinten lejátssza az amplitúdós és a
+kitöltési tényezős rezgést, és méri a tényleges rezgési energiát (a három
+tengely szórásának összegéből vett gyök). Amelyik módszernél az energia a
+szinttel mérhetően nő, azt választja az "Intenzitás-módszer" értékének; ha
+egyiknél sem, kiírja, hogy a rendszer Rezgés erőssége beállítása vagy a
+felhasználási osztály felülírhatja.
+
+Korlátok: a mérés csak mozdulatlan, kemény felületen megbízható; Android 12-től
+a gyorsulásmérő mintavétele külön engedély nélkül 200 Hz-re korlátozott, ami a
+motor frekvenciájához képest alulmintavételezés, de az energia-összehasonlításhoz
+(szintek egymáshoz képest) elegendő. A háttérből indított rezgésnél a haptikai
+dokumentáció szerint figyelemfelkeltő felhasználási osztály kell (pl.
+`USAGE_ALARM`), a hang-attribútumok pedig a rezgésre önmagukban nincsenek hatással.
+
+Forrás: [Android haptics API reference](https://developer.android.com/develop/ui/views/haptics/haptics-apis),
+[Samsung Developer Forum](https://forum.developer.samsung.com/t/hasamplitudecontrol-createwaveform-api/30327),
+[libretro fórum: vibrációs erősség figyelmen kívül hagyva](https://forums.libretro.com/t/haptic-feedback-vibration-strength-on-android-is-ignored/38728)
+
 ## Fő hivatkozások
 
 - https://developer.android.com/reference/kotlin/android/os/VibrationEffect
